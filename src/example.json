@@ -1,0 +1,29 @@
+{
+  "key": "value",
+  "number": 23,
+  "array": [
+    77.5,
+    "heya",
+    "hey"
+  ],
+  "object": {
+    "a": "bla",
+    "b": "c"
+  },
+  "nested": [
+    {
+      "list": [
+        23,
+        42,
+        1337
+      ]
+    },
+    [
+      [
+        {
+          "ok": "ok ok ok"
+        }
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "type": "Currency",
+  "children": [
+    "Blemfleck",
+    "Braple",
+    "Flurbo",
+    "Schmeckle",
+    "Smidgen"
+  ]
+}
