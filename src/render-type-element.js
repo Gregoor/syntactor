@@ -1,15 +1,12 @@
-// @flow
 import React from 'react';
-
-import {ASTNode} from './types';
 
 let TypeElements = {};
 
-export function injectTypeElements(value: any) {
+export function injectTypeElements(value) {
   TypeElements = value;
 }
 
-export default function renderTypeElement(node: ASTNode, {level, ...props}: any) {
+export default function renderTypeElement(node, {level, ...props}: any) {
   const TypeElement = TypeElements[node.get('type')];
   if (!TypeElement) {
     return console.warn('Unknown type', node.get('type'));
