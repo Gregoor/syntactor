@@ -48,6 +48,7 @@ const cardStyle = {
 export default class App extends PureComponent {
 
   state = {
+    future: new List(),
     history: new List([
       new Map({
         inputMode: false,
@@ -102,13 +103,14 @@ export default class App extends PureComponent {
     }
   }
 
-  updateHistory(updateFn: (root: ASTNode, selected: ASTPath) => any) {
+  addToHistory(updateFn: (root: ASTNode, selected: ASTPath) => any) {
     this.setState(({history}) => {
       const editorState = history.first();
       const root = editorState.get('root');
       const selected = editorState.get('selected');
       const inputMode = editorState.get('inputMode');
       return {
+        future: new List(),
         history: history.unshift(new Map({
           inputMode, root, selected,
           ...updateFn(root, selected, inputMode)
@@ -118,12 +120,12 @@ export default class App extends PureComponent {
   }
 
   updateValue(updateFn: (any) => any) {
-    this.updateHistory((root, selected) => ({
+    this.addToHistory((root, selected) => ({
       root: root.updateIn(selected.push('value'), updateFn)
     }));
   }
 
-  insert = (node: ASTNode) => this.updateHistory((root, selected) => {
+  insert = (node: ASTNode) => this.addToHistory((root, selected) => {
     const collectionPath = this.getClosestCollectionPath(root, selected);
     const itemIndex = selected.get(collectionPath.size) + 1 || 0;
 
@@ -154,7 +156,7 @@ export default class App extends PureComponent {
       event.preventDefault();
 
       if (direction) {
-        return this.updateHistory((root, selected) => ({
+        return this.addToHistory((root, selected) => ({
           selected: navigate(direction, root, selected)
         }));
       }
@@ -195,7 +197,7 @@ export default class App extends PureComponent {
 
         case 'd':
         case 'Delete':
-          return this.updateHistory((root, selected) => ({
+          return this.addToHistory((root, selected) => ({
             root: root.deleteIn(
               selected.slice(0, 1 + selected.findLastIndex((value) => typeof value === 'number'))
             ),
@@ -204,7 +206,7 @@ export default class App extends PureComponent {
 
         case 'i':
         case 'Enter':
-          return isEditable(selectedNode) && this.updateHistory(() => ({inputMode: true}));
+          return isEditable(selectedNode) && this.addToHistory(() => ({inputMode: true}));
 
         default:
 
@@ -212,13 +214,21 @@ export default class App extends PureComponent {
     }
 
     if (ctrlKey && key === 'z') {
-      return this.setState(({history}) => ({
-        history: history.slice(1)
+      return this.setState(({future, history}) => ({
+        future: future.unshift(history.first()),
+        history: history.shift()
+      }));
+    }
+
+    if (ctrlKey && key === 'Z') {
+      return this.setState(({future, history}) => ({
+        future: future.shift(),
+        history: future.isEmpty() ? history : history.unshift(future.first())
       }));
     }
 
     if (['Enter', 'Escape'].includes(key)) {
-      return this.updateHistory((root, selected) => ({
+      return this.addToHistory((root, selected) => ({
         inputMode: false,
         root: root.getIn(selected.push('type')) === 'NumericLiteral'
           ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
@@ -228,7 +238,7 @@ export default class App extends PureComponent {
   };
 
   handleChange = ({target: {value}}: any) => {
-    this.updateHistory((root, selected, inputMode) => inputMode ? {
+    this.addToHistory((root, selected, inputMode) => inputMode ? {
       root: root.setIn(selected.push('value'), value)
     } : {});
   };
