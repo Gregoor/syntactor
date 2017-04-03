@@ -2,9 +2,13 @@
 import {List} from 'immutable';
 
 import type {ASTNode, ASTKey, VerticalDirection} from '../types';
-import {isNonEmptyCollection, isLiteral} from './utils';
+import {isNonEmptyCollection} from './utils';
 
 const verticalKeys: List<string> = List.of('elements', 'properties', 'key', 'value');
+
+function isLiteral(node: ASTNode) {
+  return ['StringLiteral', 'NumericLiteral', 'BooleanLiteral'].includes(node.get('type'));
+}
 
 function isNodeKeyOf(node: ASTNode) {
   return (key: ASTKey) => node.keySeq().includes(key.toString());

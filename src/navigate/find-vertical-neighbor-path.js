@@ -38,8 +38,9 @@ export default function findVerticalNeighborPath(
     if (parentNode.get('type') === 'ObjectProperty') {
       const newKey = isUp ? 'key' : 'value';
       const newPath = parentPath.push(newKey);
-      return newKey === lastKey || (newKey === 'value' && !isNonEmptyCollection(ast.getIn(newPath)))
-        || (newKey === 'key' && !currentIsNonEmptyCollection)
+      return newKey === lastKey
+        || (!isUp && !isNonEmptyCollection(ast.getIn(newPath)))
+        || (isUp && !currentIsNonEmptyCollection)
         ? find(parentPath)
         : newPath;
     }
@@ -49,7 +50,8 @@ export default function findVerticalNeighborPath(
     }
 
     if (isUp && lastKey === 0) {
-      return find(parentPath.slice(0, -1));
+      const grandParentPath = parentPath.slice(0, -1);
+      return parentPath.get(-3) === 'elements' ? grandParentPath : find(grandParentPath);
     }
     if (!isUp && lastKey === parentSize - 1) {
       return parentPath.push('end');

@@ -18,10 +18,10 @@ function traverseHorizontally(direction: HorizontalDirection, ast: ASTNode, path
   const isLeft = direction === 'LEFT';
 
   const parentPath = path.slice(0, -1);
-  if (
-    ast.getIn(parentPath).get('type') === 'ObjectProperty' &&
-    (isLeft ? 'key' : 'value') !== path.last()
-  ) return parentPath.push(isLeft ? 'key' : 'value');
+  const newKey = isLeft ? 'key' : 'value';
+  if (ast.getIn(parentPath).get('type') === 'ObjectProperty' && newKey !== path.last()) {
+    return parentPath.push(newKey);
+  }
 
   const newPath = traverseVertically(isLeft ? 'UP' : 'DOWN', ast, path);
   return isLeft && ast.getIn(newPath.slice(0, -1)).get('type') === 'ObjectProperty'
