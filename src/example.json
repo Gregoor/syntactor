@@ -1,6 +1,13 @@
-[
-  23,
-  {
-    "much": "key"
-  }
-]
+{
+  "project": "Syntactor",
+  "recursive": true,
+  "version": 0.1,
+  "author": {
+    "name": "Gregor",
+    "twitter": "@gr__or"
+  },
+  "inspirations": [
+    "Scratch",
+    "Greenfoot"
+  ]
+}
