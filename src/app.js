@@ -4,11 +4,15 @@ import * as Immutable from 'immutable';
 
 import type {ASTNode} from './types';
 import {ArrayExpression, ObjectExpression} from './components/collections';
+import Keymap from './components/keymap';
 import {BooleanLiteral, NumericLiteral, StringLiteral} from './components/literals';
-import renderTypeElement, {injectTypeElements} from './render-type-element';
+import {
+  isBooleanLiteral, isNumericLiteral, isArrayExpression, isObjectExpression, isEditable
+} from './checks';
+import example from './example.json';
 import navigate from './navigate';
 import parse from './parse';
-import example from './example.json';
+import renderTypeElement, {injectTypeElements} from './render-type-element';
 
 const {List, Map} = Immutable;
 
@@ -26,14 +30,6 @@ const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
 
-const isBooleanLiteral = (node) => node.get('type') === 'BooleanLiteral';
-const isNumericLiteral = (node) => node.get('type') === 'NumericLiteral';
-const isStringLiteral = (node) => node.get('type') === 'StringLiteral';
-const isArrayExpression = (node) => node.get('type') === 'ArrayExpression';
-const isObjectExpression = (node) => node.get('type') === 'ObjectExpression';
-
-const isEditable = (node: ASTNode) => isStringLiteral(node) || isNumericLiteral(node);
-
 const links = [
   ['Reasoning', 'https://medium.com/@grgtwt/code-is-not-just-text-1082981ae27f'],
   ['Roadmap', 'https://github.com/Gregoor/syntactor#roadmap'],
@@ -46,33 +42,6 @@ const cardStyle = {
   background: 'white',
   boxShadow: '0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12)'
 };
-
-class KeyInfo extends PureComponent {
-
-  render() {
-    const {children, keys} = this.props;
-    return (
-      <div>
-        <span style={{display: 'inline-block', width: 100}}>
-          {keys.map((key, i) => [
-            <kbd style={{fontWeight: 'bold'}}>{key}</kbd>,
-            i + 1 < keys.length ? ' | ' : ''
-          ])}
-        </span>
-        <span>{children}</span>
-      </div>
-    )
-  }
-
-}
-
-const KeySection = ({children, title}) => (
-  <div style={{marginBottom: 20}}>
-    <h3 style={{textAlign: 'center', margin: 0}}>{title}</h3>
-    <hr/>
-    {children}
-  </div>
-);
 
 export default class App extends PureComponent {
 
@@ -230,7 +199,6 @@ export default class App extends PureComponent {
 
   render() {
     const {inputMode, root, selected} = this.state;
-    const selectedNode = this.getSelectedNode();
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
@@ -241,16 +209,17 @@ export default class App extends PureComponent {
           <h1>Syntactor</h1>
 
           <div style={{marginBottom: 10, ...cardStyle}}>
-            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
+            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+              |
               {links.map(([label, link], i) => [
                 <a key={label} href={link}>{label}</a>,
-                i < links.length - 1 && '|'
+                '|'
               ])}
             </div>
             <div style={{marginTop: 20, whiteSpace: 'pre-line'}}>
               An editor with two basic goals:
               <ol>
-                <li>Only allow valid code to be entered (no syntax errors)</li>
+                <li>Manage syntax and code style (no syntax errors, no bikeshedding)</li>
                 <li>At least as fast at making changes as regular editors</li>
               </ol>
               For now, it's only a JSON editor.
@@ -262,46 +231,7 @@ export default class App extends PureComponent {
               {renderTypeElement(root, {inputMode, level: 0, selected})}
             </form>
             <div style={{marginLeft: 10, minWidth: 270, height: '100%', ...cardStyle}}>
-              {inputMode
-                ? (
-                  <KeySection title="General">
-                    <KeyInfo keys={['Esc', 'Enter']}>Leave Input Mode</KeyInfo>
-                  </KeySection>
-                )
-                : (
-                  <div>
-                    <KeySection title="Modify">
-                      <KeyInfo keys={['Del']}>
-                        Delete {isInArray ? 'element' : 'property'}
-                      </KeyInfo>
-                      {selectedNode && (
-                        <div>
-                          {isEditable(selectedNode) && (
-                            <KeyInfo keys={['Enter', 'i']}>
-                              Enter Input Mode
-                            </KeyInfo>
-                          )}
-                          {isBooleanLiteral(selectedNode) && (
-                            <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
-                          )}
-                          {isNumericLiteral(selectedNode) && (
-                            <KeyInfo keys={['+', '-']}>Increment/Decrement</KeyInfo>
-                          )}
-                        </div>
-                      )}
-                    </KeySection>
-
-                    <KeySection title={'Insert into ' + (isInArray ? 'array' : 'object')}>
-                      <KeyInfo keys={['s', '\'']}>String</KeyInfo>
-                      <KeyInfo keys={['n']}>Number</KeyInfo>
-                      <KeyInfo keys={['b']}>Boolean</KeyInfo>
-                      <KeyInfo keys={['a', '[']}>Array</KeyInfo>
-                      <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
-                    </KeySection>
-
-                  </div>
-                )
-              }
+              <Keymap {...{inputMode, isInArray}} selectedNode={this.getSelectedNode()}/>
             </div>
           </div>
         </div>
