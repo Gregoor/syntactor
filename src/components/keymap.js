@@ -41,8 +41,14 @@ export default class Keymap extends PureComponent {
       )
       : (
         <div>
+          <KeySection title="Navigate">
+            <KeyInfo keys={['h', 'Left']}>Left</KeyInfo>
+            <KeyInfo keys={['l', 'Right']}>Right</KeyInfo>
+            <KeyInfo keys={['k', 'Up']}>Up</KeyInfo>
+            <KeyInfo keys={['j', 'Down']}>Down</KeyInfo>
+          </KeySection>
           <KeySection title="Modify">
-            <KeyInfo keys={['Del']}>
+            <KeyInfo keys={['Del', 'd']}>
               Delete {isInArray ? 'element' : 'property'}
             </KeyInfo>
             {selectedNode && (

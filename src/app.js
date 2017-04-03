@@ -73,16 +73,33 @@ export default class App extends PureComponent {
     return selected.slice(0, index + 1);
   }
 
+  getDirection(key) {
+    switch (key) {
+
+      case 'k':
+      case 'ArrowUp':
+        return 'UP';
+
+      case 'j':
+      case 'ArrowDown':
+        return 'DOWN';
+
+      case 'h':
+      case 'ArrowLeft':
+        return 'LEFT';
+
+      case 'l':
+      case 'ArrowRight':
+        return 'RIGHT';
+
+    }
+  }
+
   handleKeyDown = (event: any) => {
     const {inputMode, root, selected} = this.state;
     const {ctrlKey, key} = event;
 
-    const direction = {
-      ArrowUp: 'UP',
-      ArrowDown: 'DOWN',
-      ArrowLeft: 'LEFT',
-      ArrowRight: 'RIGHT'
-    }[key];
+    const direction = this.getDirection(key);
 
     if (!inputMode) {
       event.preventDefault();
@@ -129,6 +146,7 @@ export default class App extends PureComponent {
               root: root.setIn(selected.push('value'), Boolean(key === 't'))
             });
 
+        case 'd':
         case 'Delete':
           // TODO: history
           return this.setState(({
