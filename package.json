@@ -1,15 +1,17 @@
 {
-  "name": "babysteps",
+  "name": "syntactor",
+  "homepage": "https://gregoor.github.io/syntactor",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
+    "flow-bin": "^0.42.0",
+    "gh-pages": "^0.12.0",
     "jest-immutable-matchers": "^1.4.0",
-    "react-scripts": "0.9.0"
+    "react-scripts": "0.9.5"
   },
   "dependencies": {
     "babylon": "^6.15.0",
     "immutable": "^3.8.1",
-    "object-hash": "^1.1.5",
     "react": "^15.4.2",
     "react-dom": "^15.4.2"
   },
@@ -17,6 +19,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "flow": "flow",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   }
 }

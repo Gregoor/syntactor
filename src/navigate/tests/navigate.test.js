@@ -3,8 +3,8 @@ import path from 'path';
 import {List} from 'immutable';
 import * as matchers from 'jest-immutable-matchers';
 
-import parse from '../src/parse';
-import navigate, {UP, DOWN} from '../src/navigate';
+import parse from '../../parse';
+import navigate from '../../navigate';
 
 
 describe('navigate', () => {
@@ -17,18 +17,17 @@ describe('navigate', () => {
   for (const fixture of fs.readdirSync(fixturesPath)) it(fixture, () => {
     const fixturePath = path.join(fixturesPath, fixture);
 
-    const input = require(path.join(fixturePath, 'input.json'));
-    const root = parse(input);
-
+    const root = parse(require(path.join(fixturePath, 'input.json')));
     const paths = new List(require(path.join(fixturePath, 'path')).default);
+
     [
-      [paths, DOWN],
-      [paths.reverse().slice(1), UP]
+      [paths, 'RIGHT'],
+      [paths.reverse().slice(1), 'LEFT']
     ].reduce(
       (startPath, [paths, direction]) => (
         paths.reduce(
           (path, expected) => {
-            path = navigate(root, path, direction);
+            path = navigate(direction, root, path);
             expect(path).toEqualImmutable(new List(expected));
             return path;
           },

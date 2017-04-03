@@ -1,7 +1,7 @@
 {
   "Rick": "Sanchez",
   "Beth": "Smith-Sanchez",
-  "Jerry": 0 ,
+  "Jerry": false,
   "Morty": 1,
   "Summer": "Smith"
 }
