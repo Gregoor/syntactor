@@ -25,7 +25,7 @@ npm start
 
 ## Roadmap
 
-1. Copy & Paste (#1)
-2. Undo/Redo (#2)
+1. Copy & Paste #1
+2. Undo/Redo #2
 3. JavaScript Support
 4. Atom/VSCode/Nuclide Plugin
