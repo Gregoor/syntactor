@@ -238,8 +238,13 @@ export default class App extends PureComponent {
 
       if (ctrlKey && key === 'c') {
         event.preventDefault();
+        let selected = editorState.get('selected');
+        if (selected.last() === 'end') {
+          selected = selected.slice(0, -2);
+        }
+        console.log(selected.toJS());
         return clipboard.copy(
-          generate(editorState.get('root').getIn(editorState.get('selected')).toJS()).code
+          generate(editorState.get('root').getIn(selected).toJS()).code
         );
       }
     }
