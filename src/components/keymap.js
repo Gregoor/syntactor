@@ -1,6 +1,6 @@
 // @flow
 import React, {PureComponent} from 'react';
-import {isBooleanLiteral, isNumericLiteral, isEditable} from '../checks';
+import {isBooleanLiteral, isNumericLiteral, isObjectExpression, isEditable} from '../checks';
 
 class KeyInfo extends PureComponent {
 
@@ -68,8 +68,11 @@ export default class Keymap extends PureComponent {
             )}
           </KeySection>
 
-          <KeySection title={'Insert into ' + (isInArray ? 'array' : 'object')}>
-            <KeyInfo keys={['s', '\'']}>String</KeyInfo>
+          <KeySection title={
+            'Insert into '
+            + (isInArray && selectedNode && !isObjectExpression(selectedNode) ? 'array' : 'object')
+          }>
+          <KeyInfo keys={['s', '\'']}>String</KeyInfo>
             <KeyInfo keys={['n']}>Number</KeyInfo>
             <KeyInfo keys={['b']}>Boolean</KeyInfo>
             <KeyInfo keys={['a', '[']}>Array</KeyInfo>
