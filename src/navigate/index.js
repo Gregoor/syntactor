@@ -12,7 +12,10 @@ function traverseVertically(direction: VerticalDirection, ast: ASTNode, path: AS
   const neighborPath = findVerticalNeighborPath(direction, ast, path);
   if (
     (neighborPath.isEmpty() && isUp)
-    || (!is(path, neighborPath) && neighborPath.get(-2) === 'elements')
+    || (
+      !is(path, neighborPath) && neighborPath.get(-2) === 'elements'
+      && !(isUp && path.last() === 'end')
+    )
   ) return neighborPath;
   return neighborPath.concat(findVerticalPathIn(direction, ast.getIn(neighborPath)));
 }

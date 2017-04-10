@@ -27,33 +27,28 @@ function findChildKey(node: ASTNode, keys: List<string>): [?ASTKey, ?ASTNode] {
   else return findChildKey(node, keys);
 }
 
-export default function findVerticalPathIn(direction: VerticalDirection, startNode?: ASTNode) {
-  return function findIn(node) {
-    if (!node || isLiteral(node)) return new List();
+export default function findVerticalPathIn(direction: VerticalDirection, node?: ASTNode) {
+  if (!node || isLiteral(node)) return new List();
 
-    const isUp = direction === 'UP';
+  const isUp = direction === 'UP';
 
-    if (
-      node.get('type') === 'ObjectProperty' &&
-      !(isUp && isNonEmptyCollection(node.get('value')))
-    ) {
-      return List.of('key');
-    }
+  if (node.get('type') === 'ObjectProperty' && !(isUp && isNonEmptyCollection(node.get('value')))) {
+    return List.of('key');
+  }
 
-    const [childKey, childNode] = findChildKey(
-      node, isUp ? verticalKeys.reverse() : verticalKeys
-    );
+  const [childKey, childNode] = findChildKey(node, isUp ? verticalKeys.reverse() : verticalKeys);
 
-    if (!childKey || !childNode || childNode.get('type') === 'ObjectExpression') return new List();
+  if (!isUp && (!childKey || !childNode || childNode.get('type') === 'ObjectExpression')) {
+    return new List();
+  }
 
-    if (['number', 'string', 'boolean'].includes(typeof childNode) || isLiteral(childNode)) {
-      return List.of(childKey);
-    }
+  if (['number', 'string', 'boolean'].includes(typeof childNode) || isLiteral(childNode)) {
+    return List.of(childKey);
+  }
 
-    let path = List.of(childKey);
-    if (childNode instanceof List) {
-      path = path.push(isUp ? 'end' : 0);
-    }
-    return path.concat(findIn(node.getIn(path)));
-  }(startNode)
+  let path = List.of(childKey);
+  if (childNode instanceof List) {
+    path = path.push(isUp ? 'end' : 0);
+  }
+  return path.concat(findVerticalPathIn(direction, node.getIn(path)));
 };

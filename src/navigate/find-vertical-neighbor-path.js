@@ -23,15 +23,28 @@ export default function findVerticalNeighborPath(
     const parentSize = parentNode.size;
 
     if (lastKey === 'end') {
-      return isUp ? parentPath.push(Math.max(0, parentSize - 1)) : find(parentPath.slice(0, -2));
+      if (isUp) {
+        return parentPath.push(Math.max(0, parentSize - 1));
+      } 
+
+      const grandParentPath = parentPath.slice(0, -1);
+      const lastGrandParentKey = grandParentPath.last();
+      const grandGrandParentPath = grandParentPath.slice(0, -1);
+      if (
+        typeof lastGrandParentKey === 'number'
+        && lastGrandParentKey === ast.getIn(grandGrandParentPath).size - 1
+      ) {
+        return grandGrandParentPath.push('end');
+      }
+      return find(grandGrandParentPath);
     }
 
     if (path.isEmpty()) {
       return new List();
     }
 
-    const currentIsNonEmptyCollection = isNonEmptyCollection(ast.getIn(path));
-    if (!isUp && currentIsNonEmptyCollection) {
+    const pathIsNonEmptyCollection = isNonEmptyCollection(ast.getIn(path));
+    if (!isUp && pathIsNonEmptyCollection) {
       return path;
     }
 
@@ -40,7 +53,7 @@ export default function findVerticalNeighborPath(
       const newPath = parentPath.push(newKey);
       return newKey === lastKey
         || (!isUp && !isNonEmptyCollection(ast.getIn(newPath)))
-        || (isUp && !currentIsNonEmptyCollection)
+        || (isUp && !pathIsNonEmptyCollection)
         ? find(parentPath)
         : newPath;
     }

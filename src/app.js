@@ -27,7 +27,7 @@ injectTypeElements({
 });
 
 const BooleanNode = new Map({type: 'BooleanLiteral', value: true});
-const NumericNode = new Map({type: 'NumericLiteral', value: ''});
+const NumericNode = new Map({type: 'NumericLiteral', value: '0'});
 const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});

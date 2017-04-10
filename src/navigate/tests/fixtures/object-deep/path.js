@@ -9,4 +9,7 @@ export default [
   ['properties', 1, 'value', 'properties', 1, 'value'],
   ['properties', 1, 'value', 'properties', 1, 'value', 'properties', 0, 'key'],
   ['properties', 1, 'value', 'properties', 1, 'value', 'properties', 0, 'value'],
+  ['properties', 1, 'value', 'properties', 1, 'value', 'properties', 'end'],
+  ['properties', 1, 'value', 'properties', 'end'],
+  ['properties', 'end']
 ];
