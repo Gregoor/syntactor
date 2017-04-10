@@ -152,6 +152,20 @@ export default class App extends PureComponent {
     };
   });
 
+  deleteSelected() {
+    return this.addToHistory((root, selected) => {
+      const newRoot = root.deleteIn(
+        selected.slice(0, 1 + selected.findLastIndex((value) => typeof value === 'number'))
+      );
+      return {
+        root: newRoot,
+        selected: selected.last() === 'end'
+          ? new List()
+          : navigate('DOWN', newRoot, navigate('UP', root, selected))
+      };
+    });
+  }
+
   goToEditable(direction: 'LEFT' | 'RIGHT') {
     return this.addToHistory((root, selected) => {
       let visitedPaths = new List();
@@ -230,15 +244,11 @@ export default class App extends PureComponent {
 
         case 'd':
         case 'Delete':
-          return this.addToHistory((root, selected) => ({
-            root: root.deleteIn(
-              selected.slice(0, 1 + selected.findLastIndex((value) => typeof value === 'number'))
-            ),
-            selected: selected.last() === 'end' ? new List() : navigate('UP', root, selected)
-          }));
+          return this.deleteSelected();
 
         case 'i':
         case 'Enter':
+          event.preventDefault();
           return isEditable(selectedNode) && this.addToHistory(() => ({inputMode: true}));
 
         default:
@@ -251,11 +261,17 @@ export default class App extends PureComponent {
         if (selected.last() === 'end') {
           selected = selected.slice(0, -2);
         }
-        console.log(selected.toJS());
         return clipboard.copy(
           generate(editorState.get('root').getIn(selected).toJS()).code
         );
       }
+    }
+
+    if (['UP', 'DOWN'].includes(direction)) {
+      return this.addToHistory((root, selected) => ({
+        inputMode: false,
+        selected: navigate(direction, root, selected)
+      }));
     }
 
     if (ctrlKey && key.toLowerCase() === 'z') {

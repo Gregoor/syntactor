@@ -33,54 +33,66 @@ export default class Keymap extends PureComponent {
 
   render() {
     const {inputMode, isInArray, selectedNode} = this.props;
-    return inputMode
-      ? (
-        <KeySection title="General">
-          <KeyInfo keys={['Esc', 'Enter']}>Leave Input Mode</KeyInfo>
+    return (
+      <div>
+        <KeySection title="Navigate">
+          <KeyInfo keys={['Left']}>Left</KeyInfo>
+          <KeyInfo keys={['Right']}>Right</KeyInfo>
+          <KeyInfo keys={['Up']}>Up</KeyInfo>
+          <KeyInfo keys={['Down']}>Down</KeyInfo>
+          <KeyInfo keys={['Tab']}>To next editable</KeyInfo>
+          <KeyInfo keys={['+ Shift']}>To previous editable</KeyInfo>
         </KeySection>
-      )
-      : (
-        <div>
-          <KeySection title="Navigate">
-            <KeyInfo keys={['h', 'Left']}>Left</KeyInfo>
-            <KeyInfo keys={['l', 'Right']}>Right</KeyInfo>
-            <KeyInfo keys={['k', 'Up']}>Up</KeyInfo>
-            <KeyInfo keys={['j', 'Down']}>Down</KeyInfo>
-          </KeySection>
-          <KeySection title="Modify">
-            <KeyInfo keys={['d', 'Del']}>
-              Delete {isInArray ? 'element' : 'property'}
-            </KeyInfo>
-            {selectedNode && (
-              <div>
-                {isEditable(selectedNode) && (
-                  <KeyInfo keys={['i', 'Enter']}>
-                    Enter Input Mode
-                  </KeyInfo>
+        <KeySection title="General">
+          <KeyInfo keys={['Ctrl + z']}>Undo</KeyInfo>
+          <KeyInfo keys={['+ Shift']}>Redo</KeyInfo>
+          <KeyInfo keys={['Ctrl + c']}>Copy selected</KeyInfo>
+        </KeySection>
+        {inputMode
+          ? (
+            <KeySection title="Modify">
+              <KeyInfo keys={['Esc', 'Enter']}>Leave Input Mode</KeyInfo>
+            </KeySection>
+          )
+          : (
+            <div>
+              <KeySection title="Modify">
+                <KeyInfo keys={['d', 'Del']}>
+                  Delete {isInArray ? 'element' : 'property'}
+                </KeyInfo>
+                {selectedNode && (
+                  <div>
+                    {isEditable(selectedNode) && (
+                      <KeyInfo keys={['i', 'Enter']}>
+                        Enter Input Mode
+                      </KeyInfo>
+                    )}
+                    {isBooleanLiteral(selectedNode) && (
+                      <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
+                    )}
+                    {isNumericLiteral(selectedNode) && (
+                      <KeyInfo keys={['+', '-']}>Increment/Decrement</KeyInfo>
+                    )}
+                  </div>
                 )}
-                {isBooleanLiteral(selectedNode) && (
-                  <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
-                )}
-                {isNumericLiteral(selectedNode) && (
-                  <KeyInfo keys={['+', '-']}>Increment/Decrement</KeyInfo>
-                )}
-              </div>
-            )}
-          </KeySection>
+              </KeySection>
 
-          <KeySection title={
-            'Insert into '
-            + (isInArray && selectedNode && !isObjectExpression(selectedNode) ? 'array' : 'object')
-          }>
-          <KeyInfo keys={['s', '\'']}>String</KeyInfo>
-            <KeyInfo keys={['n']}>Number</KeyInfo>
-            <KeyInfo keys={['b']}>Boolean</KeyInfo>
-            <KeyInfo keys={['a', '[']}>Array</KeyInfo>
-            <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
-          </KeySection>
+              <KeySection title={
+                'Insert into '
+                + (isInArray && selectedNode && !isObjectExpression(selectedNode) ? 'array' : 'object')
+              }>
+                <KeyInfo keys={['s', '\'']}>String</KeyInfo>
+                <KeyInfo keys={['n']}>Number</KeyInfo>
+                <KeyInfo keys={['b']}>Boolean</KeyInfo>
+                <KeyInfo keys={['a', '[']}>Array</KeyInfo>
+                <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
+              </KeySection>
 
-        </div>
-      );
+            </div>
+          )
+        }
+      </div>
+    );
   }
 
 }
