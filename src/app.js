@@ -129,7 +129,9 @@ export default class App extends PureComponent {
 
   insert = (node: ASTNode) => this.addToHistory((root, selected) => {
     const collectionPath = this.getClosestCollectionPath(root, selected);
-    const itemIndex = selected.get(collectionPath.size) + 1 || 0;
+    const itemIndex = selected.last() === 'end'
+      ? collectionPath.size
+      : selected.get(collectionPath.size) + 1 || 0;
 
     const isArray = isArrayExpression(root.getIn(collectionPath.slice(0, -1)));
 
@@ -142,6 +144,7 @@ export default class App extends PureComponent {
     const newSelected = isArray
       ? collectionPath.push(itemIndex)
       : collectionPath.push(itemIndex, 'key');
+    console.log(newSelected.toJS());
     return {
       inputMode: !isArray || isEditable(newRoot.getIn(newSelected)),
       root: newRoot,
@@ -180,6 +183,7 @@ export default class App extends PureComponent {
     if (!editorState.get('inputMode')) {
 
       if (direction) {
+        event.preventDefault();
         return this.addToHistory((root, selected) => ({
           selected: navigate(direction, root, selected)
         }));
@@ -191,20 +195,25 @@ export default class App extends PureComponent {
 
         case 's':
         case '\'':
+          event.preventDefault();
           return this.insert(StringNode);
 
         case 'n':
+          event.preventDefault();
           return this.insert(NumericNode);
 
         case 'b':
+          event.preventDefault();
           return this.insert(BooleanNode);
 
         case 'a':
         case '[':
+          event.preventDefault();
           return this.insert(ArrayNode);
 
         case 'o':
         case '{':
+          event.preventDefault();
           return this.insert(ObjectNode);
 
         case '+':
