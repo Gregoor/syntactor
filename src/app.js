@@ -147,13 +147,34 @@ export default class App extends PureComponent {
     };
   });
 
+  goToEditable(direction: 'LEFT' | 'RIGHT') {
+    return this.addToHistory((root, selected) => {
+      let visitedPaths = new List();
+      let lastEditablePath = selected;
+      let newSelectedNode;
+      let newlySelectedIsEditable;
+      do {
+        selected = navigate(direction, root, selected);
+        if (visitedPaths.includes(selected)) {
+          return {selected: lastEditablePath};
+        }
+        visitedPaths = visitedPaths.push(selected);
+        newSelectedNode = root.getIn(selected);
+        newlySelectedIsEditable = newSelectedNode && isEditable(newSelectedNode);
+        if (newlySelectedIsEditable) {
+          lastEditablePath = selected;
+        }
+      } while (!newlySelectedIsEditable);
+      return {selected: lastEditablePath};
+    });
+  }
+
   handleKeyDown = (event: any) => {
     const {ctrlKey, key} = event;
 
     const direction = this.getDirection(key);
 
     if (!this.state.history.first().get('inputMode')) {
-      event.preventDefault();
 
       if (direction) {
         return this.addToHistory((root, selected) => ({
@@ -213,27 +234,32 @@ export default class App extends PureComponent {
       }
     }
 
-    if (ctrlKey && key === 'z') {
-      return this.setState(({future, history}) => ({
-        future: future.unshift(history.first()),
-        history: history.shift()
-      }));
-    }
-
-    if (ctrlKey && key === 'Z') {
-      return this.setState(({future, history}) => ({
-        future: future.shift(),
-        history: future.isEmpty() ? history : history.unshift(future.first())
-      }));
+    if (ctrlKey && key.toLowerCase() === 'z') {
+      event.preventDefault();
+      return this.setState(({future, history}) => key === 'z'
+        ? {
+          future: future.unshift(history.first()),
+          history: history.shift()
+        }
+        : {
+          future: future.shift(),
+          history: future.isEmpty() ? history : history.unshift(future.first())
+        }
+      );
     }
 
     if (['Enter', 'Escape'].includes(key)) {
-      return this.addToHistory((root, selected) => ({
+      this.addToHistory((root, selected) => ({
         inputMode: false,
         root: root.getIn(selected.push('type')) === 'NumericLiteral'
           ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
           : root
       }));
+    }
+
+    if (key === 'Tab') {
+      event.preventDefault();
+      return this.goToEditable(event.shiftKey ? 'LEFT' : 'RIGHT');
     }
   };
 
