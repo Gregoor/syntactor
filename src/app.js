@@ -1,6 +1,8 @@
 // @flow
 import React, {PureComponent} from 'react';
 import * as Immutable from 'immutable';
+import clipboard from 'clipboard-js';
+import generate from 'babel-generator';
 
 import type {ASTNode, ASTPath} from './types';
 import {ArrayExpression, ObjectExpression} from './components/collections';
@@ -174,7 +176,8 @@ export default class App extends PureComponent {
 
     const direction = this.getDirection(key);
 
-    if (!this.state.history.first().get('inputMode')) {
+    const editorState = this.state.history.first();
+    if (!editorState.get('inputMode')) {
 
       if (direction) {
         return this.addToHistory((root, selected) => ({
@@ -231,6 +234,13 @@ export default class App extends PureComponent {
 
         default:
 
+      }
+
+      if (ctrlKey && key === 'c') {
+        event.preventDefault();
+        return clipboard.copy(
+          generate(editorState.get('root').getIn(editorState.get('selected')).toJS()).code
+        );
       }
     }
 
