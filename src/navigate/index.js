@@ -6,9 +6,12 @@ import findVerticalNeighborPath from './find-vertical-neighbor-path';
 import findVerticalPathIn from './find-vertical-path-in';
 
 function traverseVertically(direction: VerticalDirection, ast: ASTNode, path: ASTPath) {
+  const isUp = direction === 'UP';
+  if (!isUp && path.last() === 'end' && path.size === 2) return path;
+
   const neighborPath = findVerticalNeighborPath(direction, ast, path);
   if (
-    (neighborPath.isEmpty() && direction === 'UP')
+    (neighborPath.isEmpty() && isUp)
     || (!is(path, neighborPath) && neighborPath.get(-2) === 'elements')
   ) return neighborPath;
   return neighborPath.concat(findVerticalPathIn(direction, ast.getIn(neighborPath)));
