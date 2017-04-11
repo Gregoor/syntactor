@@ -158,9 +158,10 @@ export default class App extends PureComponent {
       const newRoot = root.deleteIn(
         selected.slice(0, 1 + selected.findLastIndex((value) => typeof value === 'number'))
       );
+      const isRootDelete = selected.isEmpty() || (selected.size === 2 && selected.last() === 'end');
       return {
-        root: newRoot,
-        selected: selected.last() === 'end'
+        root: isRootDelete ? NullNode : newRoot,
+        selected: isRootDelete || selected.last() === 'end'
           ? new List()
           : navigate('DOWN', newRoot, navigate('UP', root, selected))
       };
