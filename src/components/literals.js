@@ -36,7 +36,7 @@ export class BooleanLiteral extends PureComponent {
   render() {
     const {node, selected} = this.props;
     return (
-      <Highlightable highlighted={selected} style={{}}>
+      <Highlightable highlighted={selected}>
         <b>{node.get('value').toString()}</b>
       </Highlightable>
     );
@@ -58,6 +58,14 @@ export class NumericLiteral extends PureComponent {
         </Editable>
       </Highlightable>
     );
+  }
+}
+export class NullLiteral extends PureComponent {
+  props: {
+    selected?: ASTPath
+  };
+  render() {
+    return <Highlightable highlighted={this.props.selected}><b>null</b></Highlightable>;
   }
 }
 

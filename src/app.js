@@ -7,7 +7,7 @@ import generate from 'babel-generator';
 import type {ASTNode, ASTPath} from './types';
 import {ArrayExpression, ObjectExpression} from './components/collections';
 import Keymap from './components/keymap';
-import {BooleanLiteral, NumericLiteral, StringLiteral} from './components/literals';
+import {BooleanLiteral, NumericLiteral, NullLiteral, StringLiteral} from './components/literals';
 import {
   isBooleanLiteral, isNumericLiteral, isArrayExpression, isObjectExpression, isEditable
 } from './checks';
@@ -23,6 +23,7 @@ const MAX_HISTORY_LENGTH = 100;
 injectTypeElements({
   BooleanLiteral,
   NumericLiteral,
+  NullLiteral,
   StringLiteral,
   ArrayExpression,
   ObjectExpression
@@ -30,6 +31,7 @@ injectTypeElements({
 
 const BooleanNode = new Map({type: 'BooleanLiteral', value: true});
 const NumericNode = new Map({type: 'NumericLiteral', value: '0'});
+const NullNode = new Map({type: 'NullLiteral'});
 const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
@@ -144,7 +146,6 @@ export default class App extends PureComponent {
     const newSelected = isArray
       ? collectionPath.push(itemIndex)
       : collectionPath.push(itemIndex, 'key');
-    console.log(newSelected.toJS());
     return {
       inputMode: !isArray || isEditable(newRoot.getIn(newSelected)),
       root: newRoot,
@@ -229,6 +230,10 @@ export default class App extends PureComponent {
         case '{':
           event.preventDefault();
           return this.insert(ObjectNode);
+
+        case '.':
+          event.preventDefault();
+          return this.insert(NullNode);
 
         case '+':
         case '-':

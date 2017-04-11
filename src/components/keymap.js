@@ -86,6 +86,7 @@ export default class Keymap extends PureComponent {
                 <KeyInfo keys={['b']}>Boolean</KeyInfo>
                 <KeyInfo keys={['a', '[']}>Array</KeyInfo>
                 <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
+                <KeyInfo keys={['.']}>Null</KeyInfo>
               </KeySection>
 
             </div>
