@@ -37,7 +37,7 @@ const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
 
 const links = [
   ['Reasoning', 'https://medium.com/@grgtwt/code-is-not-just-text-1082981ae27f'],
-  ['Roadmap', 'https://github.com/Gregoor/syntactor#roadmap'],
+  ['Roadmap', 'https://github.com/Gregoor/syntactor/milestones?with_issues=no'],
   ['GitHub', 'https://github.com/gregoor/syntactor'],
   ['Issues', 'https://github.com/Gregoor/syntactor/issues']
 ];
