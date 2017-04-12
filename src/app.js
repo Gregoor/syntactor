@@ -186,6 +186,31 @@ export default class App extends PureComponent {
     });
   }
 
+  undo() {
+    this.setState(({future, history}) => ({
+      future: future.unshift(history.first()),
+      history: history.shift()
+    }));
+  }
+
+  redo() {
+    this.setState(({future, history}) => ({
+      future: future.shift(),
+      history: future.isEmpty() ? history : history.unshift(future.first())
+    }));
+  }
+
+  selectedToClipboard() {
+    const editorState = this.state.history.first();
+    let selected = editorState.get('selected');
+    if (selected.last() === 'end') {
+      selected = selected.slice(0, -2);
+    }
+    return clipboard.copy(
+      generate(editorState.get('root').getIn(selected).toJS()).code
+    );
+  }
+
   handleKeyDown = (event: any) => {
     const {ctrlKey, key} = event;
 
@@ -244,11 +269,9 @@ export default class App extends PureComponent {
             () => Boolean(key === 't')
           );
 
-        case 'd':
         case 'Delete':
           return this.deleteSelected();
 
-        case 'i':
         case 'Enter':
           event.preventDefault();
           return isEditable(selectedNode) && this.addToHistory(() => ({inputMode: true}));
@@ -259,13 +282,7 @@ export default class App extends PureComponent {
 
       if (ctrlKey && key === 'c') {
         event.preventDefault();
-        let selected = editorState.get('selected');
-        if (selected.last() === 'end') {
-          selected = selected.slice(0, -2);
-        }
-        return clipboard.copy(
-          generate(editorState.get('root').getIn(selected).toJS()).code
-        );
+        return this.selectedToClipboard();
       }
     }
 
@@ -278,16 +295,7 @@ export default class App extends PureComponent {
 
     if (ctrlKey && key.toLowerCase() === 'z') {
       event.preventDefault();
-      return this.setState(({future, history}) => key === 'z'
-        ? {
-          future: future.unshift(history.first()),
-          history: history.shift()
-        }
-        : {
-          future: future.shift(),
-          history: future.isEmpty() ? history : history.unshift(future.first())
-        }
-      );
+      return key === 'z' ? this.undo() : this.redo();
     }
 
     if (['Enter', 'Escape'].includes(key)) {
