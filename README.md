@@ -26,6 +26,6 @@ npm start
 
 ## Roadmap
 
-1. Copy & Paste ([#1](../../issues/1))
+1. Embeddable (similar API to CodeMirror)
 2. JavaScript Support
 3. Atom/VSCode/Nuclide Plugin
