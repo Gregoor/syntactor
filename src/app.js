@@ -189,7 +189,7 @@ export default class App extends PureComponent {
   undo() {
     this.setState(({future, history}) => ({
       future: future.unshift(history.first()),
-      history: history.shift()
+      history: history.size > 1 ? history.shift() : history
     }));
   }
 
