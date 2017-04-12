@@ -85,19 +85,15 @@ export default class App extends PureComponent {
   getDirection(key: string) {
     switch (key) {
 
-      case 'k':
       case 'ArrowUp':
         return 'UP';
 
-      case 'j':
       case 'ArrowDown':
         return 'DOWN';
 
-      case 'h':
       case 'ArrowLeft':
         return 'LEFT';
 
-      case 'l':
       case 'ArrowRight':
         return 'RIGHT';
 
