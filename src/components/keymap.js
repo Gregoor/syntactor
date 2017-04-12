@@ -57,13 +57,13 @@ export default class Keymap extends PureComponent {
           : (
             <div>
               <KeySection title="Modify">
-                <KeyInfo keys={['d', 'Del']}>
+                <KeyInfo keys={['Del']}>
                   Delete {isInArray ? 'element' : 'property'}
                 </KeyInfo>
                 {selectedNode && (
                   <div>
                     {isEditable(selectedNode) && (
-                      <KeyInfo keys={['i', 'Enter']}>
+                      <KeyInfo keys={['Enter']}>
                         Enter Input Mode
                       </KeyInfo>
                     )}
