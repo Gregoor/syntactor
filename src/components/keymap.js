@@ -47,6 +47,7 @@ export default class Keymap extends PureComponent {
           <KeyInfo keys={['Ctrl + z']}>Undo</KeyInfo>
           <KeyInfo keys={['+ Shift']}>Redo</KeyInfo>
           <KeyInfo keys={['Ctrl + c']}>Copy selected</KeyInfo>
+          <KeyInfo keys={['Ctrl + v']}>Paste into selected</KeyInfo>
         </KeySection>
         {inputMode
           ? (

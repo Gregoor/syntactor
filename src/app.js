@@ -1,7 +1,6 @@
 // @flow
 import React, {PureComponent} from 'react';
 import * as Immutable from 'immutable';
-import clipboard from 'clipboard-js';
 import generate from 'babel-generator';
 
 import type {ASTNode, ASTPath} from './types';
@@ -61,6 +60,18 @@ export default class App extends PureComponent {
       })
     ])
   };
+
+  componentDidMount() {
+    document.addEventListener('copy', this.handleCopy);
+    document.addEventListener('cut', this.handleCut);
+    document.addEventListener('paste', this.handlePaste);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('copy', this.handleCopy);
+    document.removeEventListener('cut', this.handleCut);
+    document.removeEventListener('paste', this.handlePaste);
+  }
 
   getSelectedNode() {
     const editorState = this.state.history.first();
@@ -200,16 +211,45 @@ export default class App extends PureComponent {
     }));
   }
 
-  selectedToClipboard() {
+  handleCopy = (event: any) => {
+    if (this.state.history.first().get('inputMode')) {
+      return;
+    }
+
     const editorState = this.state.history.first();
     let selected = editorState.get('selected');
     if (selected.last() === 'end') {
       selected = selected.slice(0, -2);
     }
-    return clipboard.copy(
+    event.clipboardData.setData('text/plain',
       generate(editorState.get('root').getIn(selected).toJS()).code
     );
-  }
+    event.preventDefault();
+  };
+
+  handleCut = (event: any) => {
+    if (this.state.history.first().get('inputMode')) {
+      return;
+    }
+    this.handleCopy(event);
+    this.deleteSelected();
+  };
+
+  handlePaste = (event: any) => {
+    if (this.state.history.first().get('inputMode')) {
+      return;
+    }
+    const clipboardStr = event.clipboardData.getData('text/plain');
+    let data;
+    try {
+      data = JSON.parse(clipboardStr);
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+    event.preventDefault();
+    this.insert(parse(data));
+  };
 
   handleKeyDown = (event: any) => {
     const {ctrlKey, key} = event;
@@ -278,11 +318,6 @@ export default class App extends PureComponent {
 
         default:
 
-      }
-
-      if (ctrlKey && key === 'c') {
-        event.preventDefault();
-        return this.selectedToClipboard();
       }
     }
 
