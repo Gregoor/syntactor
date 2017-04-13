@@ -13,6 +13,7 @@ import {
 import example from '../../package.json';
 import navigate from '../navigate/index';
 import parse from '../utils/parse';
+import styles from '../utils/styles';
 import renderTypeElement, {injectTypeElements} from '../utils/render-type-element';
 
 const {List, Map} = Immutable;
@@ -35,7 +36,12 @@ const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
 
+declare type Props = {
+  showKeymap?: boolean
+};
+
 declare type EditorState = Map<any, any>;
+
 
 export default class Editor extends PureComponent {
 
@@ -45,7 +51,7 @@ export default class Editor extends PureComponent {
     showKeymap: boolean
   };
 
-  constructor(props: {showKeymap?: boolean}) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       future: new List(),
@@ -367,14 +373,14 @@ export default class Editor extends PureComponent {
     return (
       <div style={{
             display: 'flex', flexDirection: 'row', whiteSpace: 'pre', outline: 'none',
-            position: 'relative'
+            position: 'relative', ...styles.text
            }}
            ref={(div) => div && !inputMode && div.focus()}
            tabIndex="0" onKeyDown={this.handleKeyDown}>
         <button type="button" onClick={this.toggleShowKeymap} style={{position: 'absolute', right: 0}}>
           {showKeymap ? 'x' : '?'}
         </button>
-        <form onChange={this.handleChange} style={{height: '100%', width: '100%', overflowX: 'auto'}}>
+        <form onChange={this.handleChange} style={{width: '100%', overflowX: 'auto'}}>
           {renderTypeElement(editorState.get('root'), {inputMode, level: 0, selected})}
         </form>
         {showKeymap && (

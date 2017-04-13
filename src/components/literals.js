@@ -2,6 +2,7 @@
 import React, {PureComponent} from 'react';
 
 import type {ASTNode, ASTPath} from '../types';
+import styles from '../utils/styles';
 import Highlightable from './highlightable';
 
 class Editable extends PureComponent {
@@ -14,6 +15,7 @@ class Editable extends PureComponent {
              size={textLength}
              style={{
                ...style,
+               ...styles.text,
                width: textLength ? 'auto' : 1,
                background: 'transparent',
                border: 'none',

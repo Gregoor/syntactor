@@ -1,9 +1,12 @@
 {
   "name": "syntactor",
+  "version": "1.0.0",
   "homepage": "https://gregoor.github.io/syntactor",
-  "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
+  "main": "lib/api",
   "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-react-app": "^2.2.0",
     "flow-bin": "^0.42.0",
     "gh-pages": "^0.12.0",
     "jest-immutable-matchers": "^1.4.0",
@@ -20,9 +23,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
     "flow": "flow",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "prepublish": "NODE_ENV=production babel -d lib/ src/"
   }
 }
