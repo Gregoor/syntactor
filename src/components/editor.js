@@ -37,7 +37,7 @@ const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
 
 declare type Props = {
-  showKeymap?: boolean
+  initiallyShowKeymap?: boolean
 };
 
 declare type EditorState = Map<any, any>;
@@ -62,7 +62,7 @@ export default class Editor extends PureComponent {
           selected: new List()
         })
       ]),
-      showKeymap: Boolean(props.showKeymap)
+      showKeymap: Boolean(props.initiallyShowKeymap)
     };
   }
 

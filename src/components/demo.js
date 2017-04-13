@@ -41,7 +41,7 @@ export default class Demo extends PureComponent {
             </div>
           </div>
 
-          <div style={cardStyle}><Editor showKeymap/></div>
+          <div style={cardStyle}><Editor initiallyShowKeymap/></div>
       </div>
     );
   }
