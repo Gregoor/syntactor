@@ -8,7 +8,7 @@ import styles from '../utils/styles';
 import Highlightable from './highlightable';
 
 const Input = styled.input`
-  width: ${(props) => props.size ? 'auto' : 1};
+  width: ${(props) => props.size ? 'auto' : '1px'};
   border: none;
   outline: none;
   white-space: normal;
