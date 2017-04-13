@@ -1,3 +1,8 @@
+import {css} from 'styled-components';
+
 export default {
-  text: {fontSize: 14, fontFamily: 'Monaco, monospace'}
+  text: css`
+    font-size: 14px;
+    font-family: Monaco, monospace;
+  `
 }

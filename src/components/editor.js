@@ -1,5 +1,7 @@
 // @flow
 import React, {PureComponent} from 'react';
+import ReactDOM from 'react-dom';
+import styled from 'styled-components';
 import * as Immutable from 'immutable';
 import generate from 'babel-generator';
 
@@ -42,6 +44,24 @@ declare type Props = {
 
 declare type EditorState = Map<any, any>;
 
+const Container = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  white-space: pre;
+  outline: none;
+  ${styles.text}
+`;
+
+const Button = styled.button`
+  position: absolute;
+  right: 0;
+`;
+
+const Form = styled.form`
+  width: 100%;
+  overflow-x: auto;  
+`;
 
 export default class Editor extends PureComponent {
 
@@ -81,6 +101,15 @@ export default class Editor extends PureComponent {
   toggleShowKeymap = () => this.setState(({showKeymap}) => ({
     showKeymap: !showKeymap
   }));
+
+  retainFocus = (el: any) => {
+    if (el && !this.state.history.first().get('inputMode')) {
+      const div = ReactDOM.findDOMNode(el);
+      if (div instanceof HTMLElement) {
+        div.focus();
+      }
+    }
+  };
 
   getSelectedNode() {
     const editorState = this.state.history.first();
@@ -371,24 +400,15 @@ export default class Editor extends PureComponent {
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
-      <div style={{
-            display: 'flex', flexDirection: 'row', whiteSpace: 'pre', outline: 'none',
-            position: 'relative', ...styles.text
-           }}
-           ref={(div) => div && !inputMode && div.focus()}
-           tabIndex="0" onKeyDown={this.handleKeyDown}>
-        <button type="button" onClick={this.toggleShowKeymap} style={{position: 'absolute', right: 0}}>
-          {showKeymap ? 'x' : '?'}
-        </button>
-        <form onChange={this.handleChange} style={{width: '100%', overflowX: 'auto'}}>
+      <Container tabIndex="0" ref={this.retainFocus} onKeyDown={this.handleKeyDown}>
+      <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
+        <Form onChange={this.handleChange} style={{marginRight: 10}}>
           {renderTypeElement(editorState.get('root'), {inputMode, level: 0, selected})}
-        </form>
+        </Form>
         {showKeymap && (
-          <div style={{marginLeft: 10, minWidth: 270, height: '100%'}}>
-            <Keymap {...{inputMode, isInArray}} selectedNode={this.getSelectedNode()}/>
-          </div>
+          <Keymap {...{inputMode, isInArray}} selectedNode={this.getSelectedNode()}/>
         )}
-      </div>
+      </Container>
     );
   }
 

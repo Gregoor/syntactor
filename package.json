@@ -17,7 +17,8 @@
     "babylon": "^6.15.0",
     "immutable": "^3.8.1",
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react-dom": "^15.4.2",
+    "styled-components": "^1.4.4"
   },
   "scripts": {
     "start": "react-scripts start",

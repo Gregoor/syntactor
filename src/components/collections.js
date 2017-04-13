@@ -1,17 +1,21 @@
 // @flow
 import React, {PureComponent} from 'react';
+import styled from 'styled-components';
 import {is, List} from 'immutable';
 
 import renderTypeElement from '../utils/render-type-element';
 import type {ASTNode, ASTPath} from '../types';
 import Highlightable from './highlightable';
 
+const IndentContainer = styled.span`
+  border-left: 1px solid rgba(0, 0, 0, .1);
+  background: white;
+`;
+
 const indent = (level) => {
   const indents = [];
   for (let i = 0; i < level; i++) {
-    indents.push(
-      <span style={{borderLeft: '1px solid rgba(0, 0, 0, .1)', background: 'white'}}>{'  '}</span>
-    );
+    indents.push(<IndentContainer>{'  '}</IndentContainer>);
   }
   return indents;
 };

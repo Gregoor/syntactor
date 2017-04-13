@@ -1,5 +1,6 @@
 // @flow
 import React, {PureComponent} from 'react';
+import styled from 'styled-components';
 
 import Editor from './editor';
 
@@ -10,11 +11,20 @@ const links = [
   ['Issues', 'https://github.com/Gregoor/syntactor/issues']
 ];
 
-const cardStyle = {
-  padding: 20,
-  background: 'white',
-  boxShadow: '0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12)'
-};
+const Card = styled.div`
+  padding: 20px;
+  background: white;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),
+    0 3px 1px -2px rgba(0,0,0,.2),
+    0 1px 5px 0 rgba(0,0,0,.12);
+`;
+
+const Nav = styled.div`
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
 
 export default class Demo extends PureComponent {
 
@@ -23,15 +33,15 @@ export default class Demo extends PureComponent {
         <div style={{maxWidth: 800, margin: '0 auto'}}>
           <h1>Syntactor</h1>
 
-          <div style={{marginBottom: 10, ...cardStyle}}>
-            <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Card style={{marginBottom: 10}}>
+            <Nav>
               |
               {links.map(([label, link], i) => [
                 <a key={label} href={link}>{label}</a>,
                 '|'
               ])}
-            </div>
-            <div style={{marginTop: 20, whiteSpace: 'pre-line'}}>
+            </Nav>
+            <div>
               An editor with two basic goals:
               <ol>
                 <li>Manage syntax and code style (no syntax errors, no bikeshedding)</li>
@@ -39,9 +49,9 @@ export default class Demo extends PureComponent {
               </ol>
               For now, it's only a JSON editor.
             </div>
-          </div>
+          </Card>
 
-          <div style={cardStyle}><Editor initiallyShowKeymap/></div>
+          <Card><Editor initiallyShowKeymap/></Card>
       </div>
     );
   }

@@ -1,32 +1,39 @@
 // @flow
 import React, {PureComponent} from 'react';
+import ReactDOM from 'react-dom';
+import styled from 'styled-components';
 
 import type {ASTNode, ASTPath} from '../types';
 import styles from '../utils/styles';
 import Highlightable from './highlightable';
 
+const Input = styled.input`
+  width: ${(props) => props.textLength ? 'auto' : 1};
+  border: none;
+  outline: normal;
+  white-space: normal;
+  background: transparent;
+  ${styles.text}
+`;
+
 class Editable extends PureComponent {
+
+  retainFocus = (el) => {
+    const input = ReactDOM.findDOMNode(el);
+    if (input instanceof HTMLElement) {
+      this.props.focused ? input.focus() : input.blur();
+    }
+  };
+
   render() {
-    const {children, focused, style} = this.props;
+    const {children, style} = this.props;
     const textLength = children.toString().length;
     return (
-      <input type="text"
-             ref={(input) => input && (focused ? input.focus() : input.blur())}
-             size={textLength}
-             style={{
-               ...style,
-               ...styles.text,
-               width: textLength ? 'auto' : 1,
-               background: 'transparent',
-               border: 'none',
-               whiteSpace: 'normal',
-               outline: 'none'
-             }}
-             value={children}
-             onChange={() => 42}
-      />
+      <Input type="text" ref={this.retainFocus} size={textLength} style={style} value={children}
+             onChange={() => 42}/>
     );
   }
+
 }
 
 export class BooleanLiteral extends PureComponent {
