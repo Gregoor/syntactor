@@ -371,17 +371,17 @@ export default class Editor extends PureComponent {
            }}
            ref={(div) => div && !inputMode && div.focus()}
            tabIndex="0" onKeyDown={this.handleKeyDown}>
+        <button type="button" onClick={this.toggleShowKeymap} style={{position: 'absolute', right: 0}}>
+          {showKeymap ? 'x' : '?'}
+        </button>
         <form onChange={this.handleChange} style={{height: '100%', width: '100%', overflowX: 'auto'}}>
           {renderTypeElement(editorState.get('root'), {inputMode, level: 0, selected})}
         </form>
-        <div style={{marginLeft: 10, minWidth: 270, height: '100%'}}>
-          <button type="button" onClick={this.toggleShowKeymap} style={{position: 'absolute', right: 0}}>
-            {showKeymap ? 'x' : '?'}
-          </button>
-          {showKeymap && (
+        {showKeymap && (
+          <div style={{marginLeft: 10, minWidth: 270, height: '100%'}}>
             <Keymap {...{inputMode, isInArray}} selectedNode={this.getSelectedNode()}/>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
