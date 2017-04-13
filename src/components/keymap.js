@@ -58,7 +58,7 @@ export default class Keymap extends PureComponent {
           : (
             <div>
               <KeySection title="Modify">
-                <KeyInfo keys={['Del']}>
+                <KeyInfo keys={['Backspace']}>
                   Delete {isInArray ? 'element' : 'property'}
                 </KeyInfo>
                 {selectedNode && (

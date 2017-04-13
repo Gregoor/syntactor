@@ -312,7 +312,7 @@ export default class Editor extends PureComponent {
               () => Boolean(key === 't')
             );
 
-        case 'Delete':
+        case 'Backspace':
           return this.deleteSelected();
 
         case 'Enter':
