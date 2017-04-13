@@ -8,6 +8,7 @@ const fromJS = (js) => typeof js !== 'object' || js === null ? js :
     : Immutable.Seq(js).map(fromJS).toMap();
 
 export default (obj) => {
-  const root = parse('var obj = ' + JSON.stringify(obj)).program.body[0].declarations[0].init;
+  const root = parse('var obj = ' + (obj instanceof String ? obj : JSON.stringify(obj)))
+    .program.body[0].declarations[0].init;
   return fromJS(root);
 }

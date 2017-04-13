@@ -1,17 +1,17 @@
 // @flow
-import React, {PureComponent} from 'react';
+import styled, {keyframes} from 'styled-components';
 
-export default class Highlightable extends PureComponent {
-  render() {
-    const {children, highlighted, light, style} = this.props;
-    return (
-      <span style={{
-        outline: highlighted && !light ? '1px solid grey' : 'none',
-        background: light ? 'rgba(0, 0, 0, .05)' : 'none',
-        ...style
-      }}>
-        {children}
-      </span>
-    );
+const blink = keyframes`
+  from, to {
+    outline-color: rgba(0, 0, 0, .2);
   }
-}
+  50% {
+    outline-color: rgba(0, 0, 0, .5);
+  }
+`;
+
+export default styled.span`
+  ${(props) => props.highlighted && !props.light && 'outline: 1px solid grey;'}
+  ${(props) => props.light && 'background: rgba(0, 0, 0, .05);'}
+  animation: ${blink} 1s linear infinite;
+`;

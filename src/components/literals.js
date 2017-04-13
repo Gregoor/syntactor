@@ -8,9 +8,9 @@ import styles from '../utils/styles';
 import Highlightable from './highlightable';
 
 const Input = styled.input`
-  width: ${(props) => props.textLength ? 'auto' : 1};
+  width: ${(props) => props.size ? 'auto' : 1};
   border: none;
-  outline: normal;
+  outline: none;
   white-space: normal;
   background: transparent;
   ${styles.text}
@@ -29,8 +29,8 @@ class Editable extends PureComponent {
     const {children, style} = this.props;
     const textLength = children.toString().length;
     return (
-      <Input type="text" ref={this.retainFocus} size={textLength} style={style} value={children}
-             onChange={() => 42}/>
+      <Input type="text" ref={(el) => this.retainFocus(el)} size={textLength} style={style}
+             value={children} onChange={() => 42}/>
     );
   }
 

@@ -12,7 +12,6 @@ import {BooleanLiteral, NumericLiteral, NullLiteral, StringLiteral} from './lite
 import {
   isBooleanLiteral, isNumericLiteral, isArrayExpression, isObjectExpression, isEditable
 } from '../utils/checks';
-import example from '../../package.json';
 import navigate from '../navigate/index';
 import parse from '../utils/parse';
 import styles from '../utils/styles';
@@ -38,12 +37,6 @@ const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
 
-declare type Props = {
-  initiallyShowKeymap?: boolean
-};
-
-declare type EditorState = Map<any, any>;
-
 const Container = styled.div`
   position: relative;
   display: flex;
@@ -60,10 +53,23 @@ const Button = styled.button`
 
 const Form = styled.form`
   width: 100%;
+  padding: 1px;
   overflow-x: auto;  
 `;
 
+declare type Props = {
+  initiallyShowKeymap: boolean,
+  defaultValue: {}
+};
+
+declare type EditorState = Map<any, any>;
+
 export default class Editor extends PureComponent {
+
+  static defaultProps = {
+    initiallShowKeymap: true,
+    defaultValue: {}
+  };
 
   state: {
     future: List<EditorState>,
@@ -78,11 +84,11 @@ export default class Editor extends PureComponent {
       history: new List([
         new Map({
           inputMode: false,
-          root: parse(example),
+          root: parse(props.defaultValue),
           selected: new List()
         })
       ]),
-      showKeymap: Boolean(props.initiallyShowKeymap)
+      showKeymap: props.initiallyShowKeymap
     };
   }
 
@@ -400,7 +406,7 @@ export default class Editor extends PureComponent {
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
-      <Container tabIndex="0" ref={this.retainFocus} onKeyDown={this.handleKeyDown}>
+      <Container tabIndex="0" ref={(el) => this.retainFocus(el)} onKeyDown={this.handleKeyDown}>
       <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
           {renderTypeElement(editorState.get('root'), {inputMode, level: 0, selected})}

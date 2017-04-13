@@ -20,15 +20,9 @@ const indent = (level) => {
   return indents;
 };
 
-class Symbol extends PureComponent {
-  props: {
-    children?: any
-  };
-  render() {
-    const {children} = this.props;
-    return <span style={{color: 'grey'}}>{children}</span>;
-  }
-}
+const Symbol = styled.span`
+  color: grey;
+`;
 
 class CollectionExpression extends PureComponent {
   props: {
