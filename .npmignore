@@ -1,6 +1,8 @@
+build/
 public/
 src/
 tests/
 
 .babelrc
 .flowconfig
+yarn.lock
