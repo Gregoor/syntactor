@@ -162,8 +162,11 @@ export default class Editor extends PureComponent {
     this.setState(({history}) => {
       const editorState = history.first();
       const root = editorState.get('root');
-      const selected = editorState.get('selected');
       const inputMode = editorState.get('inputMode');
+      let selected = editorState.get('selected');
+      if (!root.getIn(selected)) {
+        selected = new List();
+      }
       return {
         future: new List(),
         history: history.unshift(new Map({
