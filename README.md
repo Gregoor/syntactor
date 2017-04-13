@@ -35,23 +35,11 @@ const SomeComponent = () => (
 
 ### Props
 These can be either passed as React props or as the 2nd argument into the `Syntactor.render` function.
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Type</th>
-    <th>Default Value</th>
-  </tr>
-  <tr>
-    <td>initiallyShowKeymap</td>
-    <td>boolean</td>
-    <td>`true`</td>
-  </tr>
-  <tr>
-    <td>defaultValue</td>
-    <td>JSON</td>
-    <td>`{}`</td>
-  </tr>
-</table>
+
+Name | Type | Default Value
+---|---|---|
+initiallyShowKeymap | boolean | `true`
+defaultValue | JSON | `{}`
 
 ## Contributing/Running the demo page
 
