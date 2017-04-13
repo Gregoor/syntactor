@@ -4,9 +4,6 @@
   "homepage": "https://gregoor.github.io/syntactor",
   "license": "MIT",
   "main": "lib/api",
-  "directories": {
-    "lib": "lib"
-  },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-preset-react-app": "^2.2.0",
