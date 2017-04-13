@@ -1,6 +1,6 @@
 {
   "name": "syntactor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://gregoor.github.io/syntactor",
   "license": "MIT",
   "main": "lib/api",
