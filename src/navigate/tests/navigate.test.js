@@ -3,7 +3,7 @@ import path from 'path';
 import {List} from 'immutable';
 import * as matchers from 'jest-immutable-matchers';
 
-import parse from '../../parse';
+import parse from '../../utils/parse';
 import navigate from '../../navigate';
 
 

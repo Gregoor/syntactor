@@ -3,17 +3,17 @@ import React, {PureComponent} from 'react';
 import * as Immutable from 'immutable';
 import generate from 'babel-generator';
 
-import type {ASTNode, ASTPath} from './types';
-import {ArrayExpression, ObjectExpression} from './components/collections';
-import Keymap from './components/keymap';
-import {BooleanLiteral, NumericLiteral, NullLiteral, StringLiteral} from './components/literals';
+import type {ASTNode, ASTPath} from '../types';
+import {ArrayExpression, ObjectExpression} from './collections';
+import Keymap from './keymap';
+import {BooleanLiteral, NumericLiteral, NullLiteral, StringLiteral} from './literals';
 import {
   isBooleanLiteral, isNumericLiteral, isArrayExpression, isObjectExpression, isEditable
-} from './checks';
-import example from '../package.json';
-import navigate from './navigate';
-import parse from './parse';
-import renderTypeElement, {injectTypeElements} from './render-type-element';
+} from '../utils/checks';
+import example from '../../package.json';
+import navigate from '../navigate/index';
+import parse from '../utils/parse';
+import renderTypeElement, {injectTypeElements} from '../utils/render-type-element';
 
 const {List, Map} = Immutable;
 

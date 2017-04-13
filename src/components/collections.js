@@ -2,7 +2,7 @@
 import React, {PureComponent} from 'react';
 import {is, List} from 'immutable';
 
-import renderTypeElement from '../render-type-element';
+import renderTypeElement from '../utils/render-type-element';
 import type {ASTNode, ASTPath} from '../types';
 import Highlightable from './highlightable';
 

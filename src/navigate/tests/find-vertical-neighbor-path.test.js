@@ -1,7 +1,7 @@
 import {List} from 'immutable';
 import * as matchers from 'jest-immutable-matchers';
 
-import parse from '../../parse';
+import parse from '../../utils/parse';
 import findVerticalNeighborPath from '../find-vertical-neighbor-path';
 
 const expectPath = (obj, direction, pathIn, pathOut) => {

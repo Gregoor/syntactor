@@ -1,6 +1,6 @@
 // @flow
 import React, {PureComponent} from 'react';
-import {isBooleanLiteral, isNumericLiteral, isObjectExpression, isEditable} from '../checks';
+import {isBooleanLiteral, isNumericLiteral, isObjectExpression, isEditable} from '../utils/checks';
 
 class KeyInfo extends PureComponent {
 

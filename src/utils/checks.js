@@ -1,5 +1,5 @@
 // @flow
-import type {ASTNode} from './types';
+import type {ASTNode} from '../types';
 
 export function isBooleanLiteral(node: ASTNode) {
   return node.get('type') === 'BooleanLiteral';
