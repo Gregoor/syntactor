@@ -35,24 +35,30 @@ const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
 
-const cardStyle = {
-  padding: 20,
-  background: 'white',
-  boxShadow: '0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12)'
-};
+declare type EditorState = Map<any, any>;
 
 export default class Editor extends PureComponent {
 
-  state = {
-    future: new List(),
-    history: new List([
-      new Map({
-        inputMode: false,
-        root: parse(example),
-        selected: new List()
-      })
-    ])
+  state: {
+    future: List<EditorState>,
+    history: List<EditorState>,
+    showKeymap: boolean
   };
+
+  constructor(props: {showKeymap?: boolean}) {
+    super(props);
+    this.state = {
+      future: new List(),
+      history: new List([
+        new Map({
+          inputMode: false,
+          root: parse(example),
+          selected: new List()
+        })
+      ]),
+      showKeymap: Boolean(props.showKeymap)
+    };
+  }
 
   componentDidMount() {
     document.addEventListener('copy', this.handleCopy);
@@ -65,6 +71,10 @@ export default class Editor extends PureComponent {
     document.removeEventListener('cut', this.handleCut);
     document.removeEventListener('paste', this.handlePaste);
   }
+
+  toggleShowKeymap = () => this.setState(({showKeymap}) => ({
+    showKeymap: !showKeymap
+  }));
 
   getSelectedNode() {
     const editorState = this.state.history.first();
@@ -348,21 +358,29 @@ export default class Editor extends PureComponent {
   };
 
   render() {
-    const {history} = this.state;
+    const {history, showKeymap} = this.state;
     const editorState = history.first();
     const inputMode = editorState.get('inputMode');
     const selected = editorState.get('selected');
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
-      <div style={{display: 'flex', flexDirection: 'row', whiteSpace: 'pre', outline: 'none'}}
+      <div style={{
+            display: 'flex', flexDirection: 'row', whiteSpace: 'pre', outline: 'none',
+            position: 'relative'
+           }}
            ref={(div) => div && !inputMode && div.focus()}
            tabIndex="0" onKeyDown={this.handleKeyDown}>
-        <form onChange={this.handleChange} style={{height: '100%', width: '100%', ...cardStyle}}>
+        <form onChange={this.handleChange} style={{height: '100%', width: '100%'}}>
           {renderTypeElement(editorState.get('root'), {inputMode, level: 0, selected})}
         </form>
-        <div style={{marginLeft: 10, minWidth: 270, height: '100%', ...cardStyle}}>
-          <Keymap {...{inputMode, isInArray}} selectedNode={this.getSelectedNode()}/>
+        <div style={{marginLeft: 10, minWidth: 270, height: '100%'}}>
+          <button type="button" onClick={this.toggleShowKeymap} style={{position: 'absolute', right: 0}}>
+            {showKeymap ? 'x' : '?'}
+          </button>
+          {showKeymap && (
+            <Keymap {...{inputMode, isInArray}} selectedNode={this.getSelectedNode()}/>
+          )}
         </div>
       </div>
     );

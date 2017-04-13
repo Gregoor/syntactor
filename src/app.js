@@ -41,7 +41,7 @@ export default class App extends PureComponent {
             </div>
           </div>
 
-          <Editor/>
+          <div style={cardStyle}><Editor showKeymap/></div>
       </div>
     );
   }
