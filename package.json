@@ -16,17 +16,18 @@
     "babel-generator": "^6.24.1",
     "babylon": "^6.15.0",
     "immutable": "^3.8.1",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
+    "react": "^15.5.0",
+    "react-dom": "^15.5.0",
     "styled-components": "^1.4.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build-demo": "react-scripts build",
+    "build-lib": "babel -d lib/ src/",
     "test": "react-scripts test --env=jsdom",
     "flow": "flow",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build-demo",
     "deploy": "gh-pages -d build",
-    "prepublish": "NODE_ENV=production babel -d lib/ src/"
+    "prepublish": "NODE_ENV=production npm run build-lib"
   }
 }
