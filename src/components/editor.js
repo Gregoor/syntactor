@@ -81,6 +81,8 @@ export default class Editor extends PureComponent {
     showKeymap: boolean
   };
 
+  isSelecting: bool;
+
   root: any;
 
   constructor(props: Props) {
@@ -210,14 +212,19 @@ export default class Editor extends PureComponent {
     };
   });
 
-  changeSelected(changeFn: (root: ASTNode, selected: ASTPath) => ASTPath) {
+  changeSelected = (arg: ASTPath | (root: ASTNode, selected: ASTPath) => ASTPath) => {
+    if (this.isSelecting) {
+      this.isSelecting = false;
+      return;
+    }
+    this.isSelecting = true;
     return this.addToHistory((root, selected) => ({
       root: root.getIn(selected.push('type')) === 'NumericLiteral'
         ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
         : root,
-      selected: changeFn(root, selected)
+      selected: typeof arg === 'function' ? arg(root, selected) : arg
     }));
-  }
+  };
 
   deleteSelected() {
     return this.addToHistory((root, selected) => {
@@ -382,7 +389,7 @@ export default class Editor extends PureComponent {
             node={editorState.get('root')}
             level={0}
             selected={selected}
-            onSelect={(newPath) => this.changeSelected(() => newPath)}
+            onSelect={this.changeSelected}
             ref={(el) => this.root = el}
           />
         </Form>
