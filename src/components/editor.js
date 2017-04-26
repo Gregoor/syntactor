@@ -81,6 +81,10 @@ export default class Editor extends PureComponent {
     showKeymap: boolean
   };
 
+  // Hacky! When changing to an input onFocus is fired, which calls changeSelected which leads to a
+  // double render
+  isChanging: boolean;
+
   root: any;
 
   constructor(props: Props) {
@@ -101,6 +105,10 @@ export default class Editor extends PureComponent {
     document.addEventListener('copy', this.handleCopy);
     document.addEventListener('cut', this.handleCut);
     document.addEventListener('paste', this.handlePaste);
+  }
+
+  componentDidUpdate() {
+    this.isChanging = false;
   }
 
   componentWillUnmount() {
@@ -211,6 +219,10 @@ export default class Editor extends PureComponent {
   });
 
   changeSelected = (arg: ASTPath | (root: ASTNode, selected: ASTPath) => ASTPath) => {
+    if (this.isChanging) {
+      return;
+    }
+    this.isChanging = true;
     return this.addToHistory((root, selected) => ({
       root: root.getIn(selected.push('type')) === 'NumericLiteral'
         ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
