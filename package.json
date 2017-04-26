@@ -3,15 +3,10 @@
   "version": "1.0.6",
   "homepage": "https://gregoor.github.io/syntactor",
   "license": "MIT",
+  "null": null,
+  "number": 23,
+  "boolean": true,
   "main": "lib/api",
-  "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-preset-react-app": "^2.2.0",
-    "flow-bin": "^0.42.0",
-    "gh-pages": "^0.12.0",
-    "jest-immutable-matchers": "^1.4.0",
-    "react-scripts": "0.9.5"
-  },
   "dependencies": {
     "babel-generator": "^6.24.1",
     "babylon": "^6.15.0",
@@ -19,6 +14,14 @@
     "react": "^15.5.0",
     "react-dom": "^15.5.0",
     "styled-components": "^1.4.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-react-app": "^2.2.0",
+    "flow-bin": "^0.42.0",
+    "gh-pages": "^0.12.0",
+    "jest-immutable-matchers": "^1.4.0",
+    "react-scripts": "0.9.5"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -1,6 +1,6 @@
 // @flow
 import React, {PureComponent} from 'react';
-import {isBooleanLiteral, isNumericLiteral, isObjectExpression, isEditable} from '../utils/checks';
+import {isBooleanLiteral, isNumericLiteral, isObjectExpression} from '../utils/checks';
 
 class KeyInfo extends PureComponent {
 
@@ -32,7 +32,7 @@ const KeySection = ({children, title}) => (
 export default class Keymap extends PureComponent {
 
   render() {
-    const {inputMode, isInArray, selectedNode} = this.props;
+    const {isInArray, selectedNode} = this.props;
     return (
       <div>
         <KeySection title="Navigate">
@@ -49,50 +49,33 @@ export default class Keymap extends PureComponent {
           <KeyInfo keys={['Ctrl + c']}>Copy selected</KeyInfo>
           <KeyInfo keys={['Ctrl + v']}>Paste into selected</KeyInfo>
         </KeySection>
-        {inputMode
-          ? (
-            <KeySection title="Modify">
-              <KeyInfo keys={['Esc', 'Enter']}>Leave Input Mode</KeyInfo>
-            </KeySection>
-          )
-          : (
+        <KeySection title="Modify">
+          <KeyInfo keys={['Backspace']}>
+            Delete {isInArray ? 'element' : 'property'}
+          </KeyInfo>
+          {selectedNode && (
             <div>
-              <KeySection title="Modify">
-                <KeyInfo keys={['Backspace']}>
-                  Delete {isInArray ? 'element' : 'property'}
-                </KeyInfo>
-                {selectedNode && (
-                  <div>
-                    {isEditable(selectedNode) && (
-                      <KeyInfo keys={['Enter']}>
-                        Enter Input Mode
-                      </KeyInfo>
-                    )}
-                    {isBooleanLiteral(selectedNode) && (
-                      <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
-                    )}
-                    {isNumericLiteral(selectedNode) && (
-                      <KeyInfo keys={['+', '-']}>Increment/Decrement</KeyInfo>
-                    )}
-                  </div>
-                )}
-              </KeySection>
-
-              <KeySection title={
-                'Insert into '
-                + (isInArray && selectedNode && !isObjectExpression(selectedNode) ? 'array' : 'object')
-              }>
-                <KeyInfo keys={['s', '\'']}>String</KeyInfo>
-                <KeyInfo keys={['n']}>Number</KeyInfo>
-                <KeyInfo keys={['b']}>Boolean</KeyInfo>
-                <KeyInfo keys={['a', '[']}>Array</KeyInfo>
-                <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
-                <KeyInfo keys={['.']}>Null</KeyInfo>
-              </KeySection>
-
+              {isBooleanLiteral(selectedNode) && (
+                <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
+              )}
+              {isNumericLiteral(selectedNode) && (
+                <KeyInfo keys={['+', '-']}>Increment/Decrement</KeyInfo>
+              )}
             </div>
-          )
-        }
+          )}
+        </KeySection>
+
+        <KeySection title={
+          'Insert into '
+          + (isInArray && selectedNode && !isObjectExpression(selectedNode) ? 'array' : 'object')
+        }>
+          <KeyInfo keys={['s', '\'']}>String</KeyInfo>
+          <KeyInfo keys={['n']}>Number</KeyInfo>
+          <KeyInfo keys={['b']}>Boolean</KeyInfo>
+          <KeyInfo keys={['a', '[']}>Array</KeyInfo>
+          <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
+          <KeyInfo keys={['.']}>Null</KeyInfo>
+        </KeySection>
       </div>
     );
   }

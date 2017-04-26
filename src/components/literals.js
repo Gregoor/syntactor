@@ -1,11 +1,13 @@
 // @flow
 import React, {PureComponent} from 'react';
 import ReactDOM from 'react-dom';
+import {List} from 'immutable';
 import styled from 'styled-components';
 
-import type {ASTNode, ASTPath} from '../types';
+import type {TypeElementProps} from '../types';
 import styles from '../utils/styles';
 import Highlightable from './highlightable';
+import TypeElement from './type-element';
 
 const Input = styled.input`
   width: ${(props) => props.size ? 'auto' : '1px'};
@@ -16,10 +18,34 @@ const Input = styled.input`
   ${styles.text}
 `;
 
+class Literal extends TypeElement {
+
+  render() {
+    const {children, onSelect, path, selected, tabIndex} = this.props;
+    return (
+      <Highlightable highlighted={selected} onFocus={() => onSelect(path)} {...{tabIndex}}>
+        {children}
+      </Highlightable>
+    );
+  }
+
+}
+
 class Editable extends PureComponent {
 
+  props: {
+    children?: any,
+    style?: any
+  };
+
+  input: any;
+
+  getInput() {
+    return this.input;
+  }
+
   retainFocus = (el) => {
-    const input = ReactDOM.findDOMNode(el);
+    const input = this.input = ReactDOM.findDOMNode(el);
     if (input instanceof HTMLElement) {
       this.props.focused ? input.focus() : input.blur();
     }
@@ -27,71 +53,92 @@ class Editable extends PureComponent {
 
   render() {
     const {children, style} = this.props;
-    const textLength = children.toString().length;
+    const textLength = children && children.toString().length;
     return (
-      <Input type="text" ref={(el) => this.retainFocus(el)} size={textLength} style={style}
-             value={children} onChange={() => 42}/>
+      <Input
+        onChange={() => 42}
+        ref={(el) => this.retainFocus(el)}
+        size={textLength}
+        style={style}
+        type="text"
+        value={children}
+      />
     );
   }
 
 }
 
-export class BooleanLiteral extends PureComponent {
-  props: {
-    inputMode: bool,
-    node: ASTNode,
-    selected?: ASTPath
-  };
+export class BooleanLiteral extends TypeElement {
+
+  getSelectedInput() {
+    return null;
+  }
+
+  render() {
+    return <Literal tabIndex="0"><b>{this.props.node.get('value').toString()}</b></Literal>;
+  }
+
+}
+
+export class NumericLiteral extends TypeElement {
+
+  editable: any;
+
+  getSelectedInput() {
+    return this.editable.getInput();
+  }
+
   render() {
     const {node, selected} = this.props;
     return (
-      <Highlightable highlighted={selected}>
-        <b>{node.get('value').toString()}</b>
-      </Highlightable>
-    );
-  }
-}
-
-export class NumericLiteral extends PureComponent {
-  props: {
-    inputMode: bool,
-    node: ASTNode,
-    selected?: ASTPath
-  };
-  render() {
-    const {inputMode, node, selected} = this.props;
-    return (
-      <Highlightable highlighted={selected}>
-        <Editable focused={selected && inputMode} style={{color: '#268bd2'}}>
+      <Literal {...this.props}>
+        <Editable ref={(el) => this.editable = el} focused={selected} style={{color: '#268bd2'}}>
           {node.get('value')}
         </Editable>
-      </Highlightable>
+      </Literal>
     );
   }
+
 }
-export class NullLiteral extends PureComponent {
-  props: {
-    selected?: ASTPath
-  };
-  render() {
-    return <Highlightable highlighted={this.props.selected}><b>null</b></Highlightable>;
+
+export class NullLiteral extends TypeElement {
+
+  getSelectedInput() {
+    return null;
   }
+
+  render() {
+    return <Literal tabIndex="0" {...this.props}><b>null</b></Literal>;
+  }
+
 }
 
 export class StringLiteral extends PureComponent {
-  props: {
-    inputMode: bool,
-    node: ASTNode,
-    selected?: ASTPath,
+
+  props: TypeElementProps & {
     style?: any
   };
+
+  static defaultProps = {
+    path: new List()
+  };
+
+  editable: any;
+
+  getSelectedInput() {
+    return this.editable.getInput();
+  }
+
   render() {
-    const {inputMode, node, selected, style} = this.props;
+    const {node, onSelect, path, selected, style} = this.props;
     const mergedStyle = {color: '#b58900', display: 'inline-block', ...style};
     return (
-      <Highlightable highlighted={selected} style={mergedStyle}>
-        "<Editable focused={selected && inputMode} style={mergedStyle}>{node.get('value')}</Editable>"
+      <Highlightable highlighted={selected} style={mergedStyle} onFocus={() => onSelect(path)}>
+        "<Editable ref={(el) => this.editable = el} focused={selected} style={mergedStyle}>
+          {node.get('value')}
+        </Editable>"
       </Highlightable>
     )
   }
+
 }

@@ -15,11 +15,15 @@ import {
 import navigate from '../navigate/index';
 import parse from '../utils/parse';
 import styles from '../utils/styles';
-import renderTypeElement, {injectTypeElements} from '../utils/render-type-element';
+import TypeElement, {injectTypeElements} from './type-element';
 
 const {List, Map} = Immutable;
 
 const MAX_HISTORY_LENGTH = 100;
+
+function between(number, lower, upper) {
+  return number >= lower && number <= upper;
+}
 
 injectTypeElements({
   BooleanLiteral,
@@ -77,13 +81,14 @@ export default class Editor extends PureComponent {
     showKeymap: boolean
   };
 
+  root: any;
+
   constructor(props: Props) {
     super(props);
     this.state = {
       future: new List(),
       history: new List([
         new Map({
-          inputMode: false,
           root: parse(props.defaultValue),
           selected: new List()
         })
@@ -109,7 +114,7 @@ export default class Editor extends PureComponent {
   }));
 
   retainFocus = (el: any) => {
-    if (el && !this.state.history.first().get('inputMode')) {
+    if (el && !isEditable(this.getSelectedNode())) {
       const div = ReactDOM.findDOMNode(el);
       if (div instanceof HTMLElement) {
         div.focus();
@@ -162,7 +167,6 @@ export default class Editor extends PureComponent {
     this.setState(({history}) => {
       const editorState = history.first();
       const root = editorState.get('root');
-      const inputMode = editorState.get('inputMode');
       let selected = editorState.get('selected');
       if (!root.getIn(selected)) {
         selected = new List();
@@ -170,8 +174,8 @@ export default class Editor extends PureComponent {
       return {
         future: new List(),
         history: history.unshift(new Map({
-          inputMode, root, selected,
-          ...updateFn(root, selected, inputMode)
+          root, selected,
+          ...updateFn(root, selected)
         })).slice(0, MAX_HISTORY_LENGTH)
       };
     });
@@ -201,11 +205,19 @@ export default class Editor extends PureComponent {
       ? collectionPath.push(itemIndex)
       : collectionPath.push(itemIndex, 'key');
     return {
-      inputMode: !isArray || isEditable(newRoot.getIn(newSelected)),
       root: newRoot,
       selected: newSelected
     };
   });
+
+  changeSelected(changeFn: (root: ASTNode, selected: ASTPath) => ASTPath) {
+    return this.addToHistory((root, selected) => ({
+      root: root.getIn(selected.push('type')) === 'NumericLiteral'
+        ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
+        : root,
+      selected: changeFn(root, selected)
+    }));
+  }
 
   deleteSelected() {
     return this.addToHistory((root, selected) => {
@@ -219,28 +231,6 @@ export default class Editor extends PureComponent {
           ? new List()
           : navigate('DOWN', newRoot, navigate('UP', root, selected))
       };
-    });
-  }
-
-  goToEditable(direction: 'LEFT' | 'RIGHT') {
-    return this.addToHistory((root, selected) => {
-      let visitedPaths = new List();
-      let lastEditablePath = selected;
-      let newSelectedNode;
-      let newlySelectedIsEditable;
-      do {
-        selected = navigate(direction, root, selected);
-        if (visitedPaths.includes(selected)) {
-          return {selected: lastEditablePath};
-        }
-        visitedPaths = visitedPaths.push(selected);
-        newSelectedNode = root.getIn(selected);
-        newlySelectedIsEditable = newSelectedNode && isEditable(newSelectedNode);
-        if (newlySelectedIsEditable) {
-          lastEditablePath = selected;
-        }
-      } while (!newlySelectedIsEditable);
-      return {selected: lastEditablePath};
     });
   }
 
@@ -259,7 +249,7 @@ export default class Editor extends PureComponent {
   }
 
   handleCopy = (event: any) => {
-    if (this.state.history.first().get('inputMode')) {
+    if (isEditable(this.getSelectedNode())) {
       return;
     }
 
@@ -275,17 +265,19 @@ export default class Editor extends PureComponent {
   };
 
   handleCut = (event: any) => {
-    if (this.state.history.first().get('inputMode')) {
+    if (isEditable(this.getSelectedNode())) {
       return;
     }
+
     this.handleCopy(event);
     this.deleteSelected();
   };
 
   handlePaste = (event: any) => {
-    if (this.state.history.first().get('inputMode')) {
+    if (isEditable(this.getSelectedNode())) {
       return;
     }
+
     const clipboardStr = event.clipboardData.getData('text/plain');
     let data;
     try {
@@ -302,77 +294,65 @@ export default class Editor extends PureComponent {
     const {ctrlKey, key} = event;
 
     const direction = this.getDirection(key);
-
-    const editorState = this.state.history.first();
-    if (!editorState.get('inputMode')) {
-
-      if (direction) {
-        event.preventDefault();
-        return this.addToHistory((root, selected) => ({
-          selected: navigate(direction, root, selected)
-        }));
-      }
-
-      const selectedNode = this.getSelectedNode();
-
-      switch (key) {
-
-        case 's':
-        case '\'':
-          event.preventDefault();
-          return this.insert(StringNode);
-
-        case 'n':
-          event.preventDefault();
-          return this.insert(NumericNode);
-
-        case 'b':
-          event.preventDefault();
-          return this.insert(BooleanNode);
-
-        case 'a':
-        case '[':
-          event.preventDefault();
-          return this.insert(ArrayNode);
-
-        case 'o':
-        case '{':
-          event.preventDefault();
-          return this.insert(ObjectNode);
-
-        case '.':
-          event.preventDefault();
-          return this.insert(NullNode);
-
-        case '+':
-        case '-':
-          return isNumericLiteral(selectedNode) && this.updateValue(
-              (value) => value + (key === '+' ? 1 : -1)
-            );
-
-        case 't':
-        case 'f':
-          return isBooleanLiteral(selectedNode) && this.updateValue(
-              () => Boolean(key === 't')
-            );
-
-        case 'Backspace':
-          return this.deleteSelected();
-
-        case 'Enter':
-          event.preventDefault();
-          return isEditable(selectedNode) && this.addToHistory(() => ({inputMode: true}));
-
-        default:
-
-      }
+    const selectedInput: any = this.root.getSelectedInput();
+    if (direction && (
+        ['UP', 'DOWN'].includes(direction) || !selectedInput
+        || !between(selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1), 0, selectedInput.value.length)
+    )) {
+      event.preventDefault();
+      return this.changeSelected((root, selected) => navigate(direction, root, selected));
     }
 
-    if (['UP', 'DOWN'].includes(direction)) {
-      return this.addToHistory((root, selected) => ({
-        inputMode: false,
-        selected: navigate(direction, root, selected)
-      }));
+    switch (key) {
+
+      case 's':
+      case '\'':
+        event.preventDefault();
+        return this.insert(StringNode);
+
+      case 'n':
+        event.preventDefault();
+        return this.insert(NumericNode);
+
+      case 'b':
+        event.preventDefault();
+        return this.insert(BooleanNode);
+
+      case 'a':
+      case '[':
+        event.preventDefault();
+        return this.insert(ArrayNode);
+
+      case 'o':
+      case '{':
+        event.preventDefault();
+        return this.insert(ObjectNode);
+
+      case '.':
+        event.preventDefault();
+        return this.insert(NullNode);
+
+      case '+':
+      case '-':
+        return isNumericLiteral(this.getSelectedNode()) && this.updateValue(
+            (value) => value + (key === '+' ? 1 : -1)
+          );
+
+      case 't':
+      case 'f':
+        return isBooleanLiteral(this.getSelectedNode()) && this.updateValue(
+            () => Boolean(key === 't')
+          );
+
+      case 'Backspace':
+        return this.deleteSelected();
+
+      case 'Enter':
+        event.preventDefault();
+        break;
+
+      default:
+
     }
 
     if (ctrlKey && key.toLowerCase() === 'z') {
@@ -380,31 +360,17 @@ export default class Editor extends PureComponent {
       return key === 'z' ? this.undo() : this.redo();
     }
 
-    if (['Enter', 'Escape'].includes(key)) {
-      this.addToHistory((root, selected) => ({
-        inputMode: false,
-        root: root.getIn(selected.push('type')) === 'NumericLiteral'
-          ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
-          : root
-      }));
-    }
-
-    if (key === 'Tab') {
-      event.preventDefault();
-      return this.goToEditable(event.shiftKey ? 'LEFT' : 'RIGHT');
-    }
   };
 
   handleChange = ({target: {value}}: any) => {
-    this.addToHistory((root, selected, inputMode) => inputMode ? {
+    this.addToHistory((root, selected) => ({
       root: root.setIn(selected.push('value'), value)
-    } : {});
+    }));
   };
 
   render() {
     const {history, showKeymap} = this.state;
     const editorState = history.first();
-    const inputMode = editorState.get('inputMode');
     const selected = editorState.get('selected');
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
@@ -412,10 +378,16 @@ export default class Editor extends PureComponent {
       <Container tabIndex="0" ref={(el) => this.retainFocus(el)} onKeyDown={this.handleKeyDown}>
       <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
-          {renderTypeElement(editorState.get('root'), {inputMode, level: 0, selected})}
+          <TypeElement
+            node={editorState.get('root')}
+            level={0}
+            selected={selected}
+            onSelect={(newPath) => this.changeSelected(() => newPath)}
+            ref={(el) => this.root = el}
+          />
         </Form>
         {showKeymap && (
-          <Keymap {...{inputMode, isInArray}} selectedNode={this.getSelectedNode()}/>
+          <Keymap {...{isInArray}} selectedNode={this.getSelectedNode()}/>
         )}
       </Container>
     );

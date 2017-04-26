@@ -6,8 +6,8 @@ import {isNonEmptyCollection} from './utils';
 
 function updateLastIndex(path: ASTPath, direction: VerticalDirection, size) {
   return path.update(-1, direction === 'UP'
-    ? (n) => Math.max(0, n - 1)
-    : (n) => Math.min(size - 1, n + 1)
+    ? (n) => Math.max(0, parseInt(n, 10) - 1)
+    : (n) => Math.min(size - 1, parseInt(n, 10) + 1)
   );
 }
 
@@ -20,6 +20,9 @@ export default function findVerticalNeighborPath(
     const lastKey = path.last();
     const parentPath = path.slice(0, -1);
     const parentNode = ast.getIn(parentPath);
+    if (!parentNode) {
+      throw new Error('Cant happen');
+    }
     const parentSize = parentNode.size;
 
     if (lastKey === 'end') {
@@ -29,14 +32,16 @@ export default function findVerticalNeighborPath(
 
       const grandParentPath = parentPath.slice(0, -1);
       const lastGrandParentKey = grandParentPath.last();
-      const grandGrandParentPath = grandParentPath.slice(0, -1);
+      const greatGrandParentPath = grandParentPath.slice(0, -1);
+      const greatGrandParentNode = ast.getIn(greatGrandParentPath);
       if (
         typeof lastGrandParentKey === 'number'
-        && lastGrandParentKey === ast.getIn(grandGrandParentPath).size - 1
+        && greatGrandParentNode
+        && lastGrandParentKey === greatGrandParentNode.size - 1
       ) {
-        return grandGrandParentPath.push('end');
+        return greatGrandParentPath.push('end');
       }
-      return find(grandGrandParentPath);
+      return find(greatGrandParentPath);
     }
 
     if (path.isEmpty()) {
@@ -48,7 +53,7 @@ export default function findVerticalNeighborPath(
       return path;
     }
 
-    if (parentNode.get('type') === 'ObjectProperty') {
+    if (parentNode && parentNode.get('type') === 'ObjectProperty') {
       const newKey = isUp ? 'key' : 'value';
       const newPath = parentPath.push(newKey);
       return newKey === lastKey

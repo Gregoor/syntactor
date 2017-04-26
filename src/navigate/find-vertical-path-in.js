@@ -6,8 +6,8 @@ import {isNonEmptyCollection} from './utils';
 
 const verticalKeys: List<string> = List.of('elements', 'properties', 'key', 'value');
 
-function isLiteral(node: ASTNode) {
-  return ['StringLiteral', 'NumericLiteral', 'BooleanLiteral'].includes(node.get('type'));
+function isLiteral(node?: ASTNode) {
+  return node && ['StringLiteral', 'NumericLiteral', 'BooleanLiteral'].includes(node.get('type'));
 }
 
 function isNodeKeyOf(node: ASTNode) {
@@ -40,10 +40,6 @@ export default function findVerticalPathIn(direction: VerticalDirection, node?: 
 
   if (!isUp && (!childKey || !childNode || childNode.get('type') === 'ObjectExpression')) {
     return new List();
-  }
-
-  if (['number', 'string', 'boolean'].includes(typeof childNode) || isLiteral(childNode)) {
-    return List.of(childKey);
   }
 
   let path = List.of(childKey);

@@ -1,9 +1,18 @@
+// @flow
 import {List, Map} from 'immutable';
 
-declare type ASTKey = string | number;
-declare type ASTNode = Map<string, ASTNode>
-declare type ASTPath = List<ASTKey>;
+export type ASTKey = string | number;
+export type ASTNode = Map<string, ASTNode>
+export type ASTPath = List<ASTKey>;
 
-declare type VerticalDirection = 'UP' | 'DOWN';
-declare type HorizontalDirection = 'LEFT' | 'RIGHT';
-declare type Direction = VerticalDirection | HorizontalDirection;
+export type VerticalDirection = 'UP' | 'DOWN';
+export type HorizontalDirection = 'LEFT' | 'RIGHT';
+export type Direction = VerticalDirection | HorizontalDirection;
+
+export type TypeElementProps = {
+  level: number,
+  node: ASTNode,
+  onSelect: () => ASTPath,
+  path: ASTPath,
+  selected?: ASTPath,
+};

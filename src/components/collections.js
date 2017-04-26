@@ -3,9 +3,9 @@ import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import {is, List} from 'immutable';
 
-import renderTypeElement from '../utils/render-type-element';
-import type {ASTNode, ASTPath} from '../types';
+import type {TypeElementProps} from '../types';
 import Highlightable from './highlightable';
+import TypeElement from './type-element';
 
 const IndentContainer = styled.span`
   border-left: 1px solid rgba(0, 0, 0, .1);
@@ -15,7 +15,7 @@ const IndentContainer = styled.span`
 const indent = (level) => {
   const indents = [];
   for (let i = 0; i < level; i++) {
-    indents.push(<IndentContainer>{'  '}</IndentContainer>);
+    indents.push(<IndentContainer key={i}>  </IndentContainer>);
   }
   return indents;
 };
@@ -25,13 +25,18 @@ const Symbol = styled.span`
 `;
 
 class CollectionExpression extends PureComponent {
-  props: {
+
+  props: TypeElementProps & {
     children?: any,
     openString: string,
-    closeString: string,
-    level: number,
-    selected?: ASTPath
+    closeString: string
   };
+
+  onSelect = () => {
+    const {onSelect, path} = this.props;
+    onSelect(path);
+  };
+
   render() {
     const {children, openString, closeString, level, selected} = this.props;
     const startSelected = selected && selected.isEmpty();
@@ -39,13 +44,13 @@ class CollectionExpression extends PureComponent {
     const highlighted = startSelected || endSelected;
     return !children || !children.size
       ? (
-        <Highlightable {...{highlighted}}>
+        <Highlightable {...{highlighted}} onClick={this.onSelect}>
           <Symbol>{openString}{closeString}</Symbol>
         </Highlightable>
       )
       : (
         <Highlightable {...{highlighted}} light={highlighted}>
-          <Highlightable {...{highlighted}} light={endSelected}>
+          <Highlightable {...{highlighted}} light={endSelected} onClick={this.onSelect}>
             <Symbol>{openString}</Symbol>
           </Highlightable>
           {'\n'}
@@ -58,71 +63,86 @@ class CollectionExpression extends PureComponent {
             </span>
           ))}
           {indent(level - 1)}
-          <Highlightable {...{highlighted}} light={startSelected}>
+          <Highlightable {...{highlighted}} light={startSelected} onClick={this.onSelect}>
             <Symbol>{closeString}</Symbol>
           </Highlightable>
         </Highlightable>
       );
   }
+
 }
 
-export class ArrayExpression extends PureComponent {
-  props: {
-    inputMode: bool,
-    node: ASTNode,
-    selected?: ASTPath,
-    level?: number
-  };
-  render() {
-    const {inputMode, node, level = 1, selected} = this.props;
+export class ArrayExpression extends TypeElement {
 
-    return (
-      <CollectionExpression openString="[" closeString="]" {...{level, selected}}>
-        {node.get('elements').map((node, i) => (
-          <span key={i}>
-            {renderTypeElement(node, {inputMode, level,
-              selected: selected && is(selected.slice(0, 2), List.of('elements', i))
-                ? selected.slice(2)
-                : null
-            })}
-          </span>
-        ))}
-      </CollectionExpression>
-    );
+  selected: any;
+
+  getSelectedInput() {
+    return this.selected.getSelectedInput();
   }
-}
 
-export class ObjectExpression extends PureComponent {
-  props: {
-    inputMode: bool,
-    level?: number,
-    node: ASTNode,
-    selected?: ASTPath
-  };
   render() {
-    const {inputMode, node, level = 1, selected} = this.props;
-    const keyStyle = {color: '#d33682'};
+    const {level = 1, node, onSelect, path, selected} = this.props;
     return (
-      <CollectionExpression openString="{" closeString="}" {...{level, selected}}>
-        {node.get('properties').map((node, i) => {
-          const isKeySelected = selected && is(List.of('properties', i, 'key'), selected);
+      <CollectionExpression openString="[" closeString="]" {...this.props}>
+        {node.get('elements').map((node, i) => {
+          const isSelected = selected && is(selected.slice(0, 2), List.of('elements', i));
           return (
             <span key={i}>
-              {renderTypeElement(node.get('key'), {
-                inputMode, level, selected: isKeySelected, style: keyStyle
-              })}
-              <Symbol>:</Symbol>{' '}
-              {renderTypeElement(node.get('value'), {
-                inputMode,
-                level,
-                selected: selected && is(selected.slice(0, 3), List.of('properties', i, 'value'))
-                  ? selected.slice(3)
-                  : null
-              })}
+              <TypeElement
+                {...{level, node, onSelect}}
+                path={path.push('elements', i)}
+                ref={(el) => isSelected && (this.selected = el)}
+                selected={selected && isSelected ? selected.slice(2) : null}
+              />
             </span>
           );
         })}
       </CollectionExpression>
     );
   }
+
+}
+
+export class ObjectExpression extends TypeElement {
+
+  selected: any;
+
+  getSelectedInput() {
+    return this.selected && this.selected.getSelectedInput();
+  }
+
+  render() {
+    const {level = 1, node, onSelect, path, selected} = this.props;
+    const keyStyle = {color: '#d33682'};
+    return (
+      <CollectionExpression openString="{" closeString="}" {...this.props}>
+        {node.get('properties').map((node, i) => {
+          const isKeySelected = selected && is(List.of('properties', i, 'key'), selected);
+          const isValueSelected = selected && is(selected.slice(0, 3), List.of('properties', i, 'value'));
+          const propertyPath = path.push('properties', i);
+          return (
+            <span key={i}>
+              <TypeElement
+                {...{level, onSelect}}
+                node={node.get('key')}
+                path={propertyPath.push('key')}
+                ref={(el) => isKeySelected && (this.selected = el)}
+                selected={isKeySelected}
+                style={keyStyle}
+              />
+              <Symbol>:</Symbol>{' '}
+              <TypeElement
+                {...{level, onSelect}}
+                node={node.get('value')}
+                path={propertyPath.push('value')}
+                ref={(el) => isValueSelected && (this.selected = el)}
+                selected={selected && isValueSelected ? selected.slice(3) : null}
+              />
+            </span>
+          );
+        })}
+      </CollectionExpression>
+    );
+  }
+
 }

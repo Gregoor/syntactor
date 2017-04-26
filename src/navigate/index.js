@@ -25,18 +25,20 @@ function traverseHorizontally(direction: HorizontalDirection, ast: ASTNode, path
 
   const parentPath = path.slice(0, -1);
   const newKey = isLeft ? 'key' : 'value';
-  if (ast.getIn(parentPath).get('type') === 'ObjectProperty' && newKey !== path.last()) {
+  const parentNode = ast.getIn(parentPath);
+  if (parentNode && parentNode.get('type') === 'ObjectProperty' && newKey !== path.last()) {
     return parentPath.push(newKey);
   }
 
   const newPath = traverseVertically(isLeft ? 'UP' : 'DOWN', ast, path);
-  return isLeft && ast.getIn(newPath.slice(0, -1)).get('type') === 'ObjectProperty'
+  const newParentNode = ast.getIn(newPath.slice(0, -1));
+  return isLeft && newParentNode && newParentNode.get('type') === 'ObjectProperty'
     ? traverseHorizontally('RIGHT', ast, newPath)
     : newPath
 }
 
 export default function navigate(direction: Direction, ast: ASTNode, path: ASTPath) {
-  if (['UP', 'DOWN'].includes(direction)) {
+  if (direction === 'UP' || direction === 'DOWN') {
     return traverseVertically(direction, ast, path);
   } else if (['LEFT', 'RIGHT'].includes(direction)) {
     return traverseHorizontally(direction, ast, path);
