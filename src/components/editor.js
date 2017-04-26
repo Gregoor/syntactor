@@ -130,6 +130,8 @@ export default class Editor extends PureComponent {
     }
   };
 
+  bindRoot = (el: any) => this.root = el;
+
   getSelectedNode() {
     const editorState = this.state.history.first();
     return editorState.get('root').getIn(editorState.get('selected'));
@@ -387,14 +389,14 @@ export default class Editor extends PureComponent {
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
-      <Container tabIndex="0" ref={(el) => this.retainFocus(el)} onKeyDown={this.handleKeyDown}>
+      <Container tabIndex="0" ref={this.retainFocus} onKeyDown={this.handleKeyDown}>
       <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
           <TypeElement
             node={editorState.get('root')}
             selected={selected}
             onSelect={this.changeSelected}
-            ref={(el) => this.root = el}
+            ref={this.bindRoot}
           />
         </Form>
         {showKeymap && (

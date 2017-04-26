@@ -20,10 +20,15 @@ const Input = styled.input`
 
 class Literal extends TypeElement {
 
+  handleFocus = () => {
+    const {onSelect, path} = this.props;
+    onSelect(path);
+  };
+
   render() {
-    const {children, onSelect, path, selected, tabIndex} = this.props;
+    const {children, selected, tabIndex} = this.props;
     return (
-      <Highlightable highlighted={selected} onFocus={() => onSelect(path)} {...{tabIndex}}>
+      <Highlightable highlighted={selected} onFocus={this.handleFous} {...{tabIndex}}>
         {children}
       </Highlightable>
     );
@@ -57,7 +62,7 @@ class Editable extends PureComponent {
     return (
       <Input
         onChange={() => 42}
-        ref={(el) => this.retainFocus(el)}
+        ref={this.retainFocus}
         size={textLength}
         style={style}
         type="text"
@@ -92,11 +97,13 @@ export class NumericLiteral extends TypeElement {
     return this.editable.getInput();
   }
 
+  bindElement = (el: any) => this.editable = el;
+
   render() {
     const {node, selected} = this.props;
     return (
       <Literal {...this.props}>
-        <Editable ref={(el) => this.editable = el} focused={selected} style={{color: '#268bd2'}}>
+        <Editable ref={this.bindElement} focused={selected} style={{color: '#268bd2'}}>
           {node.get('value')}
         </Editable>
       </Literal>
@@ -133,12 +140,14 @@ export class StringLiteral extends PureComponent {
     return this.editable.getInput();
   }
 
+  bindElement = (el: any) => this.editable = el;
+
   render() {
     const {node, onSelect, path, selected, style} = this.props;
     const mergedStyle = {color: '#b58900', display: 'inline-block', ...style};
     return (
       <Highlightable highlighted={selected} style={mergedStyle} onFocus={() => onSelect(path)}>
-        "<Editable ref={(el) => this.editable = el} focused={selected} style={mergedStyle}>
+        "<Editable ref={this.bindElement} focused={selected} style={mergedStyle}>
           {node.get('value')}
         </Editable>"
       </Highlightable>
