@@ -1,6 +1,6 @@
 [ignore]
 <PROJECT_ROOT>/node_modules/fbjs/.*
-.*/styled-components/src/.*
+.*/node_modules/styled-components/.*
 
 [libs]
 node_modules/styled-components/flow-typed/*.js
