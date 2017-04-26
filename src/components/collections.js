@@ -81,7 +81,7 @@ export class ArrayExpression extends TypeElement {
   }
 
   render() {
-    const {level = 1, node, onSelect, path, selected} = this.props;
+    const {level, node, onSelect, selected} = this.props;
     return (
       <CollectionExpression openString="[" closeString="]" {...this.props}>
         {node.get('elements').map((node, i) => {
@@ -90,7 +90,6 @@ export class ArrayExpression extends TypeElement {
             <span key={i}>
               <TypeElement
                 {...{level, node, onSelect}}
-                path={path.push('elements', i)}
                 ref={(el) => isSelected && (this.selected = el)}
                 selected={selected && isSelected ? selected.slice(2) : null}
               />
@@ -112,7 +111,7 @@ export class ObjectExpression extends TypeElement {
   }
 
   render() {
-    const {level = 1, node, onSelect, path, selected} = this.props;
+    const {level, node, onSelect, path, selected} = this.props;
     const keyStyle = {color: '#d33682'};
     return (
       <CollectionExpression openString="{" closeString="}" {...this.props}>

@@ -380,7 +380,6 @@ export default class Editor extends PureComponent {
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
           <TypeElement
             node={editorState.get('root')}
-            level={0}
             selected={selected}
             onSelect={this.changeSelected}
             ref={(el) => this.root = el}

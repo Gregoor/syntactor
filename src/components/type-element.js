@@ -14,6 +14,7 @@ export default class TypeElement extends PureComponent {
   props: TypeElementProps;
 
   static defaultProps = {
+    level: 0,
     path: new List()
   };
 
