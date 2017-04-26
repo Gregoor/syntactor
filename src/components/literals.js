@@ -75,7 +75,11 @@ export class BooleanLiteral extends TypeElement {
   }
 
   render() {
-    return <Literal tabIndex="0"><b>{this.props.node.get('value').toString()}</b></Literal>;
+    return (
+      <Literal tabIndex="0" {...this.props}>
+        <b>{this.props.node.get('value').toString()}</b>
+      </Literal>
+    );
   }
 
 }
