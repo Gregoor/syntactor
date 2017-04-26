@@ -81,8 +81,6 @@ export default class Editor extends PureComponent {
     showKeymap: boolean
   };
 
-  isSelecting: bool;
-
   root: any;
 
   constructor(props: Props) {
@@ -213,11 +211,6 @@ export default class Editor extends PureComponent {
   });
 
   changeSelected = (arg: ASTPath | (root: ASTNode, selected: ASTPath) => ASTPath) => {
-    if (this.isSelecting) {
-      this.isSelecting = false;
-      return;
-    }
-    this.isSelecting = true;
     return this.addToHistory((root, selected) => ({
       root: root.getIn(selected.push('type')) === 'NumericLiteral'
         ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
