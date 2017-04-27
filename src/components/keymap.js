@@ -29,26 +29,46 @@ const KeySection = ({children, title}) => (
   </div>
 );
 
-export default class Keymap extends PureComponent {
+class NavigateSection extends PureComponent {
 
+  render() {
+    return (
+      <KeySection title="Navigate">
+        <KeyInfo keys={['Left']}>Left</KeyInfo>
+        <KeyInfo keys={['Right']}>Right</KeyInfo>
+        <KeyInfo keys={['Up']}>Up</KeyInfo>
+        <KeyInfo keys={['Down']}>Down</KeyInfo>
+        <KeyInfo keys={['Tab']}>To next editable</KeyInfo>
+        <KeyInfo keys={['+ Shift']}>To previous editable</KeyInfo>
+      </KeySection>
+    )
+  }
+
+}
+
+class GeneralSection extends PureComponent {
+
+  render() {
+    return (
+      <KeySection title="General">
+        <KeyInfo keys={['Ctrl + z']}>Undo</KeyInfo>
+        <KeyInfo keys={['+ Shift']}>Redo</KeyInfo>
+        <KeyInfo keys={['Ctrl + c']}>Copy selected</KeyInfo>
+        <KeyInfo keys={['Ctrl + v']}>Paste into selected</KeyInfo>
+      </KeySection>
+    )
+  }
+
+}
+
+export default class Keymap extends PureComponent {
+  
   render() {
     const {isInArray, selectedNode} = this.props;
     return (
       <div>
-        <KeySection title="Navigate">
-          <KeyInfo keys={['Left']}>Left</KeyInfo>
-          <KeyInfo keys={['Right']}>Right</KeyInfo>
-          <KeyInfo keys={['Up']}>Up</KeyInfo>
-          <KeyInfo keys={['Down']}>Down</KeyInfo>
-          <KeyInfo keys={['Tab']}>To next editable</KeyInfo>
-          <KeyInfo keys={['+ Shift']}>To previous editable</KeyInfo>
-        </KeySection>
-        <KeySection title="General">
-          <KeyInfo keys={['Ctrl + z']}>Undo</KeyInfo>
-          <KeyInfo keys={['+ Shift']}>Redo</KeyInfo>
-          <KeyInfo keys={['Ctrl + c']}>Copy selected</KeyInfo>
-          <KeyInfo keys={['Ctrl + v']}>Paste into selected</KeyInfo>
-        </KeySection>
+        <NavigateSection/>
+        <GeneralSection/>
         <KeySection title="Modify">
           <KeyInfo keys={['Backspace']}>
             Delete {isInArray ? 'element' : 'property'}
