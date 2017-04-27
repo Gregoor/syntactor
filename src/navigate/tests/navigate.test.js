@@ -6,7 +6,6 @@ import * as matchers from 'jest-immutable-matchers';
 import parse from '../../utils/parse';
 import navigate from '../../navigate';
 
-
 describe('navigate', () => {
 
   beforeEach(() => {
@@ -17,7 +16,7 @@ describe('navigate', () => {
   for (const fixture of fs.readdirSync(fixturesPath)) it(fixture, () => {
     const fixturePath = path.join(fixturesPath, fixture);
 
-    const root = parse(require(path.join(fixturePath, 'input.json')));
+    const root = parse(require(path.join(fixturePath, 'input')));
     const paths = new List(require(path.join(fixturePath, 'path')).default);
 
     [
