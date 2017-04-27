@@ -1,5 +1,5 @@
-import React, {PureComponent} from 'react';
-import {List} from 'immutable';
+import React from 'react';
+import Immutable, {List} from 'immutable';
 
 import {TypeElementProps} from '../types';
 
@@ -9,7 +9,7 @@ export function injectTypeElements(value) {
   TypeElements = value;
 }
 
-export default class TypeElement extends PureComponent {
+export default class TypeElement extends React.Component {
 
   props: TypeElementProps;
 
@@ -18,6 +18,14 @@ export default class TypeElement extends PureComponent {
     path: new List()
   };
 
+  shouldComponentUpdate(nextProps) {
+    return nextProps.level !== this.props.level
+      || !Immutable.is(nextProps.node, this.props.node)
+      || nextProps.onSelect !== this.props.onSelect
+      || !Immutable.is(nextProps.path, this.props.path)
+      || !Immutable.is(nextProps.selected, this.props.selected);
+  }
+
   getSelectedInput() {
     return this.el.getSelectedInput();
   }
@@ -25,12 +33,12 @@ export default class TypeElement extends PureComponent {
   bindElement = (el) => this.el = el;
 
   render() {
-    const {node, level, ...props} = this.props;
+    const {node, level} = this.props;
     const TypeElement = TypeElements[node.get('type')];
     if (!TypeElement) {
       return console.warn('Unknown type', node.get('type'));
     }
-    return <TypeElement node={node} level={level + 1} {...props} ref={this.bindElement}/>;
+    return <TypeElement {...this.props} level={level + 1} ref={this.bindElement}/>;
   }
 
 }
