@@ -317,34 +317,36 @@ export default class Editor extends PureComponent {
       return this.changeSelected((root, selected) => navigate(direction, root, selected));
     }
 
+    if (selectedInput) return;
+
     switch (key) {
 
-      case 's':
-      case '\'':
-        event.preventDefault();
-        return this.insert(StringNode);
-
-      case 'n':
-        event.preventDefault();
-        return this.insert(NumericNode);
-
-      case 'b':
-        event.preventDefault();
-        return this.insert(BooleanNode);
-
-      case 'a':
-      case '[':
-        event.preventDefault();
-        return this.insert(ArrayNode);
-
-      case 'o':
-      case '{':
-        event.preventDefault();
-        return this.insert(ObjectNode);
-
-      case '.':
-        event.preventDefault();
-        return this.insert(NullNode);
+      // case 's':
+      // case '\'':
+      //   event.preventDefault();
+      //   return this.insert(StringNode);
+      //
+      // case 'n':
+      //   event.preventDefault();
+      //   return this.insert(NumericNode);
+      //
+      // case 'b':
+      //   event.preventDefault();
+      //   return this.insert(BooleanNode);
+      //
+      // case 'a':
+      // case '[':
+      //   event.preventDefault();
+      //   return this.insert(ArrayNode);
+      //
+      // case 'o':
+      // case '{':
+      //   event.preventDefault();
+      //   return this.insert(ObjectNode);
+      //
+      // case '.':
+      //   event.preventDefault();
+      //   return this.insert(NullNode);
 
       case '+':
       case '-':
@@ -389,7 +391,7 @@ export default class Editor extends PureComponent {
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
-      <Container tabIndex="0" ref={this.retainFocus} onKeyDown={this.handleKeyDown}>
+      <Container tabIndex="0" ref={(el) => this.retainFocus(el)} onKeyDown={this.handleKeyDown}>
       <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
           <TypeElement

@@ -40,6 +40,7 @@ class Editable extends PureComponent {
 
   props: {
     children?: any,
+    focused?: boolean,
     style?: any
   };
 
@@ -62,7 +63,7 @@ class Editable extends PureComponent {
     return (
       <Input
         onChange={() => 42}
-        ref={this.retainFocus}
+        ref={(el) => this.retainFocus(el)}
         size={textLength}
         style={style}
         type="text"
@@ -147,7 +148,7 @@ export class StringLiteral extends PureComponent {
     const mergedStyle = {color: '#b58900', display: 'inline-block', ...style};
     return (
       <Highlightable highlighted={selected} style={mergedStyle} onFocus={() => onSelect(path)}>
-        "<Editable ref={this.bindElement} focused={selected} style={mergedStyle}>
+        "<Editable ref={this.bindElement} focused={!!selected} style={mergedStyle}>
           {node.get('value')}
         </Editable>"
       </Highlightable>
