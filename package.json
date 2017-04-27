@@ -3,9 +3,7 @@
   "version": "1.0.6",
   "homepage": "https://gregoor.github.io/syntactor",
   "license": "MIT",
-  "null": null,
-  "number": 23,
-  "boolean": true,
+  "private": false,
   "main": "lib/api",
   "dependencies": {
     "babel-generator": "^6.24.1",
