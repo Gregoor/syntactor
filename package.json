@@ -24,7 +24,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build-demo": "react-scripts build",
-    "build-lib": "babel -d lib/ src/",
+    "build-lib": "babel -d lib/ --ignore test.js src/",
     "test": "react-scripts test --env=jsdom",
     "flow": "flow",
     "predeploy": "npm run build-demo",

@@ -16,7 +16,7 @@ describe('navigate', () => {
   for (const fixture of fs.readdirSync(fixturesPath)) it(fixture, () => {
     const fixturePath = path.join(fixturesPath, fixture);
 
-    const root = parse(require(path.join(fixturePath, 'input')));
+    const root = parse(require(path.join(fixturePath, 'input')).default);
     const paths = new List(require(path.join(fixturePath, 'path')).default);
 
     [
