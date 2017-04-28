@@ -81,10 +81,6 @@ export default class Editor extends PureComponent {
     showKeymap: boolean
   };
 
-  // Hacky! When changing to an input onFocus is fired, which calls changeSelected which leads to a
-  // double render
-  isChanging: boolean;
-
   root: any;
 
   constructor(props: Props) {
@@ -105,10 +101,6 @@ export default class Editor extends PureComponent {
     document.addEventListener('copy', this.handleCopy);
     document.addEventListener('cut', this.handleCut);
     document.addEventListener('paste', this.handlePaste);
-  }
-
-  componentDidUpdate() {
-    this.isChanging = false;
   }
 
   componentWillUnmount() {
@@ -178,16 +170,16 @@ export default class Editor extends PureComponent {
       const editorState = history.first();
       const root = editorState.get('root');
       let selected = editorState.get('selected');
-      if (!root.getIn(selected)) {
+      if (selected.last() !== 'end' && !root.getIn(selected)) {
         selected = new List();
       }
-      return {
-        future: new List(),
-        history: history.unshift(new Map({
-          root, selected,
-          ...updateFn(root, selected)
-        })).slice(0, MAX_HISTORY_LENGTH)
-      };
+      const newState = {root, selected, ...updateFn(root, selected)};
+      return Immutable.is(selected, newState.selected) && Immutable.is(root, newState.root)
+        ? undefined
+        : {
+          future: new List(),
+          history: history.unshift(new Map(newState)).slice(0, MAX_HISTORY_LENGTH)
+        };
     });
   }
 
@@ -220,16 +212,12 @@ export default class Editor extends PureComponent {
     };
   });
 
-  changeSelected = (arg: ASTPath | (root: ASTNode, selected: ASTPath) => ASTPath) => {
-    if (this.isChanging) {
-      return;
-    }
-    this.isChanging = true;
+  changeSelected = (newSelected: ASTPath | (root: ASTNode, selected: ASTPath) => ASTPath) => {
     return this.addToHistory((root, selected) => ({
       root: root.getIn(selected.push('type')) === 'NumericLiteral'
         ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
         : root,
-      selected: typeof arg === 'function' ? arg(root, selected) : arg
+      selected: typeof newSelected === 'function' ? newSelected(root, selected) : newSelected
     }));
   };
 
@@ -317,7 +305,7 @@ export default class Editor extends PureComponent {
       return this.changeSelected((root, selected) => navigate(direction, root, selected));
     }
 
-    if (selectedInput) return;
+    // if (selectedInput) return;
 
     switch (key) {
 
