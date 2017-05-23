@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import {List} from 'immutable';
 import styled from 'styled-components';
 
-import type {TypeElementProps} from '../types';
+import type {Direction, TypeElementProps} from '../types';
 import styles from '../utils/styles';
 import Highlightable from './highlightable';
 import TypeElement from './type-element';
@@ -36,11 +36,27 @@ class Literal extends TypeElement {
 
 }
 
+function setCaretPosition(el: any, caretPos) {
+  el.value = el.value;
+
+  if (el === null) return;
+
+  if (el.createTextRange) {
+    const range = el.createTextRange();
+    range.move('character', caretPos);
+    range.select();
+  } else if (el.selectionStart || el.selectionStart === 0) {
+    el.focus();
+    el.setSelectionRange(caretPos, caretPos);
+  }
+}
+
 class Editable extends PureComponent {
 
   props: {
     children?: any,
     focused?: boolean,
+    lastDirection?: Direction,
     style?: any
   };
 
@@ -52,8 +68,12 @@ class Editable extends PureComponent {
 
   retainFocus = (el) => {
     const input = this.input = ReactDOM.findDOMNode(el);
+    const {children, focused, lastDirection} = this.props;
     if (input instanceof HTMLElement) {
-      this.props.focused ? input.focus() : input.blur();
+      focused ? input.focus() : input.blur();
+      if (lastDirection) setCaretPosition(input,
+        ['UP', 'LEFT'].includes(lastDirection) ? children && children.toString().length : 0
+      );
     }
   };
 
@@ -101,10 +121,15 @@ export class NumericLiteral extends TypeElement {
   bindElement = (el: any) => this.editable = el;
 
   render() {
-    const {node, selected} = this.props;
+    const {lastDirection, node, selected} = this.props;
     return (
       <Literal {...this.props}>
-        <Editable ref={this.bindElement} focused={selected} style={{color: '#268bd2'}}>
+        <Editable
+          ref={this.bindElement}
+          focused={selected}
+          lastDirection={lastDirection}
+          style={{color: '#268bd2'}}
+        >
           {node.get('value')}
         </Editable>
       </Literal>
@@ -144,13 +169,20 @@ export class StringLiteral extends PureComponent {
   bindElement = (el: any) => this.editable = el;
 
   render() {
-    const {node, onSelect, path, selected, style} = this.props;
+    const {lastDirection, node, onSelect, path, selected, style} = this.props;
     const mergedStyle = {color: '#b58900', display: 'inline-block', ...style};
     return (
       <Highlightable highlighted={selected} style={mergedStyle} onFocus={() => onSelect(path)}>
-        "<Editable ref={this.bindElement} focused={!!selected} style={mergedStyle}>
+        "
+        <Editable
+          ref={this.bindElement}
+          lastDirection={lastDirection}
+          focused={!!selected}
+          style={mergedStyle}
+        >
           {node.get('value')}
-        </Editable>"
+        </Editable>
+        "
       </Highlightable>
     )
   }

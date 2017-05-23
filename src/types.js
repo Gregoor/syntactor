@@ -10,6 +10,7 @@ export type HorizontalDirection = 'LEFT' | 'RIGHT';
 export type Direction = VerticalDirection | HorizontalDirection;
 
 export type TypeElementProps = {
+  lastDirection?: Direction,
   level: number,
   node: ASTNode,
   onSelect: () => ASTPath,

@@ -5,12 +5,17 @@ import styled from 'styled-components';
 import * as Immutable from 'immutable';
 import generate from 'babel-generator';
 
-import type {ASTNode, ASTPath} from '../types';
+import type {ASTNode, ASTPath, Direction} from '../types';
 import {ArrayExpression, ObjectExpression} from './collections';
 import Keymap from './keymap';
 import {BooleanLiteral, NumericLiteral, NullLiteral, StringLiteral} from './literals';
 import {
-  isBooleanLiteral, isNumericLiteral, isArrayExpression, isObjectExpression, isEditable
+  isBooleanLiteral,
+  isNullLiteral,
+  isNumericLiteral,
+  isArrayExpression,
+  isObjectExpression,
+  isEditable
 } from '../utils/checks';
 import navigate from '../navigate/index';
 import parse from '../utils/parse';
@@ -80,6 +85,8 @@ export default class Editor extends PureComponent {
     history: List<EditorState>,
     showKeymap: boolean
   };
+
+  lastDirection: any;
 
   root: any;
 
@@ -212,13 +219,21 @@ export default class Editor extends PureComponent {
     };
   });
 
-  changeSelected = (newSelected: ASTPath | (root: ASTNode, selected: ASTPath) => ASTPath) => {
-    return this.addToHistory((root, selected) => ({
-      root: root.getIn(selected.push('type')) === 'NumericLiteral'
-        ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
-        : root,
-      selected: typeof newSelected === 'function' ? newSelected(root, selected) : newSelected
-    }));
+  replace() {
+    if (!isNullLiteral(this.getSelectedNode())) return;
+  }
+
+  changeSelected = (changeFn: (root: ASTNode, selected: ASTPath) => {direction?: Direction, selected: ASTPath}) => {
+    return this.addToHistory((root, selected) => {
+      const {direction, selected: newSelected} = changeFn(root, selected);
+      this.lastDirection = direction;
+      return {
+        root: root.getIn(selected.push('type')) === 'NumericLiteral'
+          ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
+          : root,
+        selected: newSelected
+      };
+    });
   };
 
   deleteSelected() {
@@ -302,39 +317,36 @@ export default class Editor extends PureComponent {
         || !between(selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1), 0, selectedInput.value.length)
     )) {
       event.preventDefault();
-      return this.changeSelected((root, selected) => navigate(direction, root, selected));
+      return this.changeSelected((root, selected) => ({
+        direction,
+        selected: navigate(direction, root, selected)
+      }));
     }
 
-    // if (selectedInput) return;
+    if (!selectedInput) switch (key) {
 
-    switch (key) {
+      case 's':
+      case '\'':
+        event.preventDefault();
+        return this.replace(StringNode);
 
-      // case 's':
-      // case '\'':
-      //   event.preventDefault();
-      //   return this.insert(StringNode);
-      //
-      // case 'n':
-      //   event.preventDefault();
-      //   return this.insert(NumericNode);
-      //
-      // case 'b':
-      //   event.preventDefault();
-      //   return this.insert(BooleanNode);
-      //
-      // case 'a':
-      // case '[':
-      //   event.preventDefault();
-      //   return this.insert(ArrayNode);
-      //
-      // case 'o':
-      // case '{':
-      //   event.preventDefault();
-      //   return this.insert(ObjectNode);
-      //
-      // case '.':
-      //   event.preventDefault();
-      //   return this.insert(NullNode);
+      case 'n':
+        event.preventDefault();
+        return this.replace(NumericNode);
+
+      case 'b':
+        event.preventDefault();
+        return this.replace(BooleanNode);
+
+      case 'a':
+      case '[':
+        event.preventDefault();
+        return this.replace(ArrayNode);
+
+      case 'o':
+      case '{':
+        event.preventDefault();
+        return this.replace(ObjectNode);
 
       case '+':
       case '-':
@@ -348,15 +360,16 @@ export default class Editor extends PureComponent {
             () => Boolean(key === 't')
           );
 
-      case 'Backspace':
-        return this.deleteSelected();
-
-      case 'Enter':
-        event.preventDefault();
-        break;
+      // case 'Backspace':
+      //   return this.deleteSelected();
 
       default:
 
+    }
+
+    if (key === 'Enter') {
+      event.preventDefault();
+      return this.insert(NullNode);
     }
 
     if (ctrlKey && key.toLowerCase() === 'z') {
@@ -372,6 +385,8 @@ export default class Editor extends PureComponent {
     }));
   };
 
+  handleSelect = (selected: ASTPath) => this.changeSelected(() => ({selected}));
+
   render() {
     const {history, showKeymap} = this.state;
     const editorState = history.first();
@@ -383,9 +398,10 @@ export default class Editor extends PureComponent {
       <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
           <TypeElement
+            lastDirection={this.lastDirection}
             node={editorState.get('root')}
             selected={selected}
-            onSelect={this.changeSelected}
+            onSelect={this.handleSelect}
             ref={this.bindRoot}
           />
         </Form>

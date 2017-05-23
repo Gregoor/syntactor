@@ -81,7 +81,7 @@ export class ArrayExpression extends TypeElement {
   }
 
   render() {
-    const {level, node, onSelect, selected} = this.props;
+    const {lastDirection, level, node, onSelect, selected} = this.props;
     return (
       <CollectionExpression openString="[" closeString="]" {...this.props}>
         {node.get('elements').map((node, i) => {
@@ -90,6 +90,7 @@ export class ArrayExpression extends TypeElement {
             <span key={i}>
               <TypeElement
                 {...{level, node, onSelect}}
+                lastDirection={isSelected ? lastDirection : null}
                 ref={(el) => isSelected && (this.selected = el)}
                 selected={selected && isSelected ? selected.slice(2) : null}
               />
@@ -111,7 +112,7 @@ export class ObjectExpression extends TypeElement {
   }
 
   render() {
-    const {level, node, onSelect, path, selected} = this.props;
+    const {lastDirection, level, node, onSelect, path, selected} = this.props;
     const keyStyle = {color: '#d33682'};
     return (
       <CollectionExpression openString="{" closeString="}" {...this.props}>
@@ -123,6 +124,7 @@ export class ObjectExpression extends TypeElement {
             <span key={i}>
               <TypeElement
                 {...{level, onSelect}}
+                lastDirection={isKeySelected ? lastDirection : null}
                 node={node.get('key')}
                 path={propertyPath.push('key')}
                 ref={(el) => isKeySelected && (this.selected = el)}
@@ -132,6 +134,7 @@ export class ObjectExpression extends TypeElement {
               <Symbol>:</Symbol>{' '}
               <TypeElement
                 {...{level, onSelect}}
+                lastDirection={isValueSelected ? lastDirection : null}
                 node={node.get('value')}
                 path={propertyPath.push('value')}
                 ref={(el) => isValueSelected && (this.selected = el)}

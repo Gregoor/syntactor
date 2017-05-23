@@ -1,24 +1,32 @@
 // @flow
 import type {ASTNode} from '../types';
 
+function compareType(node?: ASTNode, type: string) {
+  return node && node.get('type') === type;
+}
+
 export function isBooleanLiteral(node?: ASTNode) {
-  return node && node.get('type') === 'BooleanLiteral';
+  return compareType(node, 'BooleanLiteral');
+}
+
+export function isNullLiteral(node?: ASTNode) {
+  return compareType(node, 'NullLiteral');
 }
 
 export function isNumericLiteral(node?: ASTNode) {
-  return node && node.get('type') === 'NumericLiteral';
+  return compareType(node, 'NumericLiteral');
 }
 
 export function isStringLiteral(node?: ASTNode) {
-  return node && node.get('type') === 'StringLiteral';
+  return compareType(node, 'StringLiteral');
 }
 
 export function isArrayExpression(node?: ASTNode) {
-  return node && node.get('type') === 'ArrayExpression';
+  return compareType(node, 'ArrayExpression');
 }
 
 export function isObjectExpression(node?: ASTNode) {
-  return node && node.get('type') === 'ObjectExpression';
+  return compareType(node, 'ObjectExpression');
 }
 
 export function isEditable(node?: ASTNode) {
