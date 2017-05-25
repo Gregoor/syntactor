@@ -77,7 +77,7 @@ export class ArrayExpression extends TypeElement {
   selected: any;
 
   getSelectedInput() {
-    return this.selected.getSelectedInput();
+    return this.selected && this.selected.getSelectedInput();
   }
 
   render() {

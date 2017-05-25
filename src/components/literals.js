@@ -80,12 +80,11 @@ class Editable extends PureComponent {
 
   render() {
     const {children, style} = this.props;
-    const textLength = children && children.toString().length;
     return (
       <Input
         onChange={() => 42}
         ref={(el) => this.retainFocus(el)}
-        size={textLength}
+        size={children !== undefined && children.toString().length}
         style={style}
         type="text"
         value={children}
