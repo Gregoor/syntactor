@@ -210,17 +210,20 @@ export default class Editor extends PureComponent {
         ? node
         : new Map({type: 'ObjectProperty', key: StringNode, value: node})
     ));
-    const newSelected = isArray
-      ? collectionPath.push(itemIndex)
-      : collectionPath.push(itemIndex, 'key');
+    let newSelected = collectionPath.push(itemIndex);
+    if (!isArray) newSelected = newSelected.push('key');
     return {
       root: newRoot,
       selected: newSelected
     };
   });
 
-  replace() {
+  replace(node: Map<string, any>) {
     if (!isNullLiteral(this.getSelectedNode())) return;
+
+    this.addToHistory((root, selected) => ({
+      root: root.updateIn(selected, () => node)
+    }));
   }
 
   changeSelected = (changeFn: (root: ASTNode, selected: ASTPath) => {direction?: Direction, selected: ASTPath}) => {
@@ -365,6 +368,10 @@ export default class Editor extends PureComponent {
 
       default:
 
+    }
+
+    if (!isNaN(parseInt(key, 10)) && isNullLiteral(this.getSelectedNode())) {
+      return this.replace(NumericNode.set('value', ''));
     }
 
     if (key === 'Enter') {

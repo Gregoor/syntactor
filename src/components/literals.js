@@ -69,6 +69,7 @@ class Editable extends PureComponent {
   retainFocus = (el) => {
     const input = this.input = ReactDOM.findDOMNode(el);
     const {children, focused, lastDirection} = this.props;
+    if (document.activeElement === input) return;
     if (input instanceof HTMLElement) {
       focused ? input.focus() : input.blur();
       if (lastDirection) setCaretPosition(input,
