@@ -414,7 +414,7 @@ export default class Editor extends PureComponent {
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
       <Container tabIndex="0" ref={(el) => this.retainFocus(el)} onKeyDown={this.handleKeyDown}>
-      <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
+        <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
           <TypeElement
             lastDirection={this.lastDirection}

@@ -2,7 +2,7 @@
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 
-import example from '../../package.json';
+import example from '../package.json';
 import styles from '../utils/styles';
 import Editor from './editor';
 
