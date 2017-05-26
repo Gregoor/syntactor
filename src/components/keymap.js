@@ -1,6 +1,8 @@
 // @flow
 import React, {PureComponent} from 'react';
-import {isBooleanLiteral, isNumericLiteral, isObjectExpression} from '../utils/checks';
+import {
+  isBooleanLiteral, isNullLiteral, isNumericLiteral, isArrayExpression, isObjectExpression
+} from '../utils/checks';
 
 class KeyInfo extends PureComponent {
 
@@ -64,13 +66,16 @@ class GeneralSection extends PureComponent {
 export default class Keymap extends PureComponent {
   
   render() {
-    const {isInArray, selectedNode} = this.props;
+    const {isInArray, selected, selectedNode} = this.props;
     return (
       <div>
         <NavigateSection/>
         <GeneralSection/>
         <KeySection title="Modify">
-          <KeyInfo keys={['Backspace']}>
+          <KeyInfo keys={['Enter']}>
+            Insert {isInArray || isArrayExpression(selectedNode) ? 'element' : 'property'}
+          </KeyInfo>
+          <KeyInfo keys={['Ctrl + d']}>
             Delete {isInArray ? 'element' : 'property'}
           </KeyInfo>
           {selectedNode && (
@@ -85,17 +90,16 @@ export default class Keymap extends PureComponent {
           )}
         </KeySection>
 
-        <KeySection title={
-          'Insert into '
-          + (isInArray && selectedNode && !isObjectExpression(selectedNode) ? 'array' : 'object')
-        }>
-          <KeyInfo keys={['s', '\'']}>String</KeyInfo>
-          <KeyInfo keys={['n']}>Number</KeyInfo>
-          <KeyInfo keys={['b']}>Boolean</KeyInfo>
-          <KeyInfo keys={['a', '[']}>Array</KeyInfo>
-          <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
-          <KeyInfo keys={['.']}>Null</KeyInfo>
-        </KeySection>
+        {selected.last() !== 'key' && (
+          <KeySection title={'Change type to' + (isNullLiteral(selectedNode) ? '' : ' (Alt +) ')}>
+            <KeyInfo keys={['s', '\'']}>String</KeyInfo>
+            <KeyInfo keys={['n']}>Number</KeyInfo>
+            <KeyInfo keys={['b']}>Boolean</KeyInfo>
+            <KeyInfo keys={['a', '[']}>Array</KeyInfo>
+            <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
+            {/*<KeyInfo keys={['.']}>Null</KeyInfo>*/}
+          </KeySection>
+        )}
       </div>
     );
   }

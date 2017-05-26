@@ -40,7 +40,7 @@ injectTypeElements({
 });
 
 const BooleanNode = new Map({type: 'BooleanLiteral', value: true});
-const NumericNode = new Map({type: 'NumericLiteral', value: '0'});
+const NumericNode = new Map({type: 'NumericLiteral', value: ''});
 const NullNode = new Map({type: 'NullLiteral'});
 const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
@@ -354,24 +354,26 @@ export default class Editor extends PureComponent {
       case '+':
       case '-':
         return isNumericLiteral(this.getSelectedNode()) && this.updateValue(
-            (value) => value + (key === '+' ? 1 : -1)
-          );
+          (value) => value + (key === '+' ? 1 : -1)
+        );
 
       case 't':
       case 'f':
         return isBooleanLiteral(this.getSelectedNode()) && this.updateValue(
-            () => Boolean(key === 't')
-          );
-
-      // case 'Backspace':
-      //   return this.deleteSelected();
+          () => Boolean(key === 't')
+        );
 
       default:
 
     }
 
+    if (key === 'd' && ctrlKey) {
+      event.preventDefault();
+      return this.deleteSelected();
+    }
+
     if (!isNaN(parseInt(key, 10)) && isNullLiteral(this.getSelectedNode())) {
-      return this.replace(NumericNode.set('value', ''));
+      return this.replace(NumericNode);
     }
 
     if (key === 'Enter') {
@@ -413,7 +415,7 @@ export default class Editor extends PureComponent {
           />
         </Form>
         {showKeymap && (
-          <Keymap {...{isInArray}} selectedNode={this.getSelectedNode()}/>
+          <Keymap {...{isInArray}} selected={selected} selectedNode={this.getSelectedNode()}/>
         )}
       </Container>
     );
