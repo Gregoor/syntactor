@@ -1,10 +1,14 @@
 export default {
   type: 'Currency',
+  dollar: [
+    null
+  ],
   children: [
     'Blemfleck',
-    'Braple',
+    null,
     'Flurbo',
     'Schmeckle',
     'Smidgen'
-  ]
+  ],
+  wat: true
 }

@@ -6,8 +6,9 @@ import {isNonEmptyCollection} from './utils';
 
 const verticalKeys: List<string> = List.of('elements', 'properties', 'key', 'value');
 
+const literals = ['StringLiteral', 'NullLiteral', 'NumericLiteral', 'BooleanLiteral'];
 function isLiteral(node?: ASTNode) {
-  return node && ['StringLiteral', 'NumericLiteral', 'BooleanLiteral'].includes(node.get('type'));
+  return node && literals.includes(node.get('type'));
 }
 
 function isNodeKeyOf(node: ASTNode) {
