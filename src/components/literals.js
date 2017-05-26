@@ -20,15 +20,27 @@ const Input = styled.input`
 
 class Literal extends TypeElement {
 
+  componentDidMount() {
+    const el = ReactDOM.findDOMNode(this.container);
+    if (!el) return;
+    el.addEventListener('focusin', this.handleFocus);
+  }
+
+  componentWillUnmount() {
+    const el = ReactDOM.findDOMNode(this.container);
+    if (!el) return;
+    el.removeEventListener('focusin', this.handleFocus);
+  }
+
   handleFocus = () => {
-    const {onSelect, path} = this.props;
-    onSelect(path);
+    const {onSelect, path, selected} = this.props;
+    if (!selected) onSelect(path);
   };
 
   render() {
-    const {children, selected, tabIndex} = this.props;
+    const {children, selected, style, tabIndex} = this.props;
     return (
-      <Highlightable highlighted={selected} onFocus={this.handleFous} {...{tabIndex}}>
+      <Highlightable ref={(el) => this.container = el} highlighted={selected} {...{style, tabIndex}}>
         {children}
       </Highlightable>
     );
@@ -169,10 +181,10 @@ export class StringLiteral extends PureComponent {
   bindElement = (el: any) => this.editable = el;
 
   render() {
-    const {lastDirection, node, onSelect, path, selected, style} = this.props;
+    const {lastDirection, node, selected, style} = this.props;
     const mergedStyle = {color: '#b58900', display: 'inline-block', ...style};
     return (
-      <Highlightable highlighted={selected} style={mergedStyle} onFocus={() => onSelect(path)}>
+      <Literal {...this.props} style={mergedStyle}>
         "
         <Editable
           ref={this.bindElement}
@@ -183,7 +195,7 @@ export class StringLiteral extends PureComponent {
           {node.get('value')}
         </Editable>
         "
-      </Highlightable>
+      </Literal>
     )
   }
 

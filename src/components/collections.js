@@ -32,9 +32,14 @@ class CollectionExpression extends PureComponent {
     closeString: string
   };
 
-  onSelect = () => {
+  handleSelect = () => {
     const {onSelect, path} = this.props;
-    onSelect(path);
+    onSelect(path.butLast());
+  };
+
+  handleSelectEnd = () => {
+    const {onSelect, path} = this.props;
+    onSelect(path.push('end'));
   };
 
   render() {
@@ -44,13 +49,13 @@ class CollectionExpression extends PureComponent {
     const highlighted = startSelected || endSelected;
     return !children || !children.size
       ? (
-        <Highlightable {...{highlighted}} onClick={this.onSelect}>
+        <Highlightable {...{highlighted}} onClick={this.handleSelect}>
           <Symbol>{openString}{closeString}</Symbol>
         </Highlightable>
       )
       : (
         <Highlightable {...{highlighted}} light={highlighted}>
-          <Highlightable {...{highlighted}} light={endSelected} onClick={this.onSelect}>
+          <Highlightable {...{highlighted}} light={endSelected} onClick={this.handleSelect}>
             <Symbol>{openString}</Symbol>
           </Highlightable>
           {'\n'}
@@ -63,7 +68,7 @@ class CollectionExpression extends PureComponent {
             </span>
           ))}
           {indent(level - 1)}
-          <Highlightable {...{highlighted}} light={startSelected} onClick={this.onSelect}>
+          <Highlightable {...{highlighted}} light={startSelected} onClick={this.handleSelectEnd}>
             <Symbol>{closeString}</Symbol>
           </Highlightable>
         </Highlightable>
@@ -82,15 +87,17 @@ export class ArrayExpression extends TypeElement {
 
   render() {
     const {lastDirection, level, node, onSelect, selected} = this.props;
+    const path = this.props.path.push('elements');
     return (
-      <CollectionExpression openString="[" closeString="]" {...this.props}>
-        {node.get('elements').map((node, i) => {
+      <CollectionExpression openString="[" closeString="]" {...this.props} path={path}>
+      {node.get('elements').map((node, i) => {
           const isSelected = selected && is(selected.slice(0, 2), List.of('elements', i));
           return (
             <span key={i}>
               <TypeElement
                 {...{level, node, onSelect}}
                 lastDirection={isSelected ? lastDirection : null}
+                path={path.push(i)}
                 ref={(el) => isSelected && (this.selected = el)}
                 selected={selected && isSelected ? selected.slice(2) : null}
               />
@@ -112,14 +119,15 @@ export class ObjectExpression extends TypeElement {
   }
 
   render() {
-    const {lastDirection, level, node, onSelect, path, selected} = this.props;
+    const {lastDirection, level, node, onSelect, selected} = this.props;
     const keyStyle = {color: '#d33682'};
+    const path = this.props.path.push('properties');
     return (
-      <CollectionExpression openString="{" closeString="}" {...this.props}>
+      <CollectionExpression openString="{" closeString="}" {...this.props} path={path}>
         {node.get('properties').map((node, i) => {
           const isKeySelected = selected && is(List.of('properties', i, 'key'), selected);
           const isValueSelected = selected && is(selected.slice(0, 3), List.of('properties', i, 'value'));
-          const propertyPath = path.push('properties', i);
+          const propertyPath = path.push(i);
           return (
             <span key={i}>
               <TypeElement

@@ -1,7 +1,12 @@
 // @flow
 import React, {PureComponent} from 'react';
 import {
-  isBooleanLiteral, isNullLiteral, isNumericLiteral, isArrayExpression, isObjectExpression
+  isBooleanLiteral,
+  isNullLiteral,
+  isNumericLiteral,
+  isStringLiteral,
+  isArrayExpression,
+  isObjectExpression
 } from '../utils/checks';
 
 class KeyInfo extends PureComponent {
@@ -84,7 +89,7 @@ export default class Keymap extends PureComponent {
                 <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
               )}
               {isNumericLiteral(selectedNode) && (
-                <KeyInfo keys={['+', '-']}>Increment/Decrement</KeyInfo>
+                <KeyInfo keys={['Alt + +', '-']}>Increment/Decrement</KeyInfo>
               )}
             </div>
           )}
@@ -92,12 +97,16 @@ export default class Keymap extends PureComponent {
 
         {selected.last() !== 'key' && (
           <KeySection title={'Change type to' + (isNullLiteral(selectedNode) ? '' : ' (Alt +) ')}>
-            <KeyInfo keys={['s', '\'']}>String</KeyInfo>
-            <KeyInfo keys={['n']}>Number</KeyInfo>
-            <KeyInfo keys={['b']}>Boolean</KeyInfo>
-            <KeyInfo keys={['a', '[']}>Array</KeyInfo>
-            <KeyInfo keys={['o', String.fromCharCode(123)]}>Object</KeyInfo>
-            {/*<KeyInfo keys={['.']}>Null</KeyInfo>*/}
+            {[
+              [isStringLiteral, ['s', '\''], 'String'],
+              [isNumericLiteral, ['n'], 'Number'],
+              [isBooleanLiteral, ['b'], 'Boolean'],
+              [isArrayExpression, ['a', '['], 'Array'],
+              [isObjectExpression, ['o', String.fromCharCode(123)], 'Object'],
+              [isNullLiteral, ['.'], 'Null']
+            ].map(([checkFn, keys, label]) => (
+              !checkFn(selectedNode) && <KeyInfo key={label} keys={keys}>{label}</KeyInfo>
+            ))}
           </KeySection>
         )}
       </div>

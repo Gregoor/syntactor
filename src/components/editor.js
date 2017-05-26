@@ -219,8 +219,6 @@ export default class Editor extends PureComponent {
   });
 
   replace(node: Map<string, any>) {
-    if (!isNullLiteral(this.getSelectedNode())) return;
-
     this.addToHistory((root, selected) => ({
       root: root.updateIn(selected, () => node)
     }));
@@ -311,7 +309,7 @@ export default class Editor extends PureComponent {
   };
 
   handleKeyDown = (event: any) => {
-    const {ctrlKey, key} = event;
+    const {altKey, ctrlKey, key} = event;
 
     const direction = this.getDirection(key);
     const selectedInput: any = this.root.getSelectedInput();
@@ -327,29 +325,6 @@ export default class Editor extends PureComponent {
     }
 
     if (!selectedInput) switch (key) {
-
-      case 's':
-      case '\'':
-        event.preventDefault();
-        return this.replace(StringNode);
-
-      case 'n':
-        event.preventDefault();
-        return this.replace(NumericNode);
-
-      case 'b':
-        event.preventDefault();
-        return this.replace(BooleanNode);
-
-      case 'a':
-      case '[':
-        event.preventDefault();
-        return this.replace(ArrayNode);
-
-      case 'o':
-      case '{':
-        event.preventDefault();
-        return this.replace(ObjectNode);
 
       case '+':
       case '-':
@@ -372,8 +347,43 @@ export default class Editor extends PureComponent {
       return this.deleteSelected();
     }
 
-    if (!isNaN(parseInt(key, 10)) && isNullLiteral(this.getSelectedNode())) {
+    const selectedIsNull = isNullLiteral(this.getSelectedNode());
+    if (selectedIsNull && !isNaN(parseInt(key, 10))) {
       return this.replace(NumericNode);
+    }
+    if (this.state.history.first().get('selected').last() !== 'key' && (selectedIsNull || altKey)) {
+      switch (key) {
+
+        case 's':
+        case '\'':
+          event.preventDefault();
+          return this.replace(StringNode);
+
+        case 'n':
+          event.preventDefault();
+          return this.replace(NumericNode);
+
+        case 'b':
+          event.preventDefault();
+          return this.replace(BooleanNode);
+
+        case 'a':
+        case '[':
+          event.preventDefault();
+          return this.replace(ArrayNode);
+
+        case 'o':
+        case '{':
+          event.preventDefault();
+          return this.replace(ObjectNode);
+
+        case '.':
+          event.preventDefault();
+          return this.replace(NullNode);
+
+        default:
+
+      }
     }
 
     if (key === 'Enter') {
