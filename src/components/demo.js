@@ -71,7 +71,10 @@ export default class Demo extends PureComponent {
               An editor with two basic goals:
               <ol>
                 <li>Manage syntax and code style (no syntax errors, no bikeshedding)</li>
-                <li>At least as fast at making changes as regular editors</li>
+                <li>
+                  Common code transformations in just as many or less keystrokes,
+                  compared to other editors
+                </li>
               </ol>
               For now, it's only a JSON editor.
             </div>

@@ -2,7 +2,7 @@
 
 An editor with two basic goals:
 1. Only allow valid code to be entered (no syntax errors)
-2. At least as fast at making changes as regular editors
+2. Common code transformations in just as many or less keystrokes, compared to other editors
 
 For now, it's only a JSON editor.
 
