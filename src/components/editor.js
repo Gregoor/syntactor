@@ -326,12 +326,6 @@ export default class Editor extends PureComponent {
 
     if (!selectedInput) switch (key) {
 
-      case '+':
-      case '-':
-        return isNumericLiteral(this.getSelectedNode()) && this.updateValue(
-          (value) => value + (key === '+' ? 1 : -1)
-        );
-
       case 't':
       case 'f':
         return isBooleanLiteral(this.getSelectedNode()) && this.updateValue(
@@ -341,6 +335,12 @@ export default class Editor extends PureComponent {
       default:
 
     }
+
+    if (isNumericLiteral(this.getSelectedNode()) && ['+', '-'].includes(key)) {
+      event.preventDefault();
+      return this.updateValue((value) => value + (key === '+' ? 1 : -1));
+    }
+
 
     if (key === 'd' && ctrlKey) {
       event.preventDefault();
