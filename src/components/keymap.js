@@ -100,7 +100,8 @@ export default class Keymap extends PureComponent {
             {[
               [isStringLiteral, ['s', '\''], 'String'],
               [isNumericLiteral, ['n'], 'Number'],
-              [isBooleanLiteral, ['b'], 'Boolean'],
+              [isBooleanLiteral, ['t'], 'true (Boolean)'],
+              [isBooleanLiteral, ['f'], 'false (Boolean)'],
               [isArrayExpression, ['a', '['], 'Array'],
               [isObjectExpression, ['o', String.fromCharCode(123)], 'Object'],
               [isNullLiteral, ['.'], 'Null']

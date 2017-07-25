@@ -324,18 +324,6 @@ export default class Editor extends PureComponent {
       }));
     }
 
-    if (!selectedInput) switch (key) {
-
-      case 't':
-      case 'f':
-        return isBooleanLiteral(this.getSelectedNode()) && this.updateValue(
-          () => Boolean(key === 't')
-        );
-
-      default:
-
-    }
-
     if (isNumericLiteral(this.getSelectedNode()) && ['+', '-'].includes(key)) {
       event.preventDefault();
       return this.updateValue((value) => value + (key === '+' ? 1 : -1));
@@ -351,7 +339,11 @@ export default class Editor extends PureComponent {
     if (selectedIsNull && !isNaN(parseInt(key, 10))) {
       return this.replace(NumericNode);
     }
-    if (this.state.history.first().get('selected').last() !== 'key' && (selectedIsNull || altKey)) {
+    if (
+      this.state.history.first().get('selected').last() !== 'key' && (
+        selectedIsNull || altKey || isBooleanLiteral(this.getSelectedNode())
+      )
+    ) {
       switch (key) {
 
         case 's':
@@ -363,9 +355,10 @@ export default class Editor extends PureComponent {
           event.preventDefault();
           return this.replace(NumericNode);
 
-        case 'b':
+        case 't':
+        case 'f':
           event.preventDefault();
-          return this.replace(BooleanNode);
+          return this.replace(BooleanNode.set('value', Boolean(key === 't')));
 
         case 'a':
         case '[':
