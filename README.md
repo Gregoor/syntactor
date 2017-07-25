@@ -1,5 +1,6 @@
-# Syntactor
+[![Build Status](https://travis-ci.org/Gregoor/syntactor.svg?branch=master)](https://travis-ci.org/Gregoor/syntactor)
 
+# Syntactor
 An editor with two basic goals:
 1. Only allow valid code to be entered (no syntax errors)
 2. Common code transformations in just as many or less keystrokes, compared to other editors
