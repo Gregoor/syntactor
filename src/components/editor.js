@@ -374,12 +374,15 @@ export default class Editor extends PureComponent {
         case 's':
         case '\'':
           event.preventDefault();
-          return this.replace(StringNode);
+          return this.replace(
+            StringNode.set('value', (this.getSelectedNode().get('value') || '').toString())
+          );
 
         case 'n':
           event.preventDefault();
+          const value = this.getSelectedNode().get('value');
           return this.replace(
-            NumericNode.set('value', Number(this.getSelectedNode().get('value')) || '')
+            NumericNode.set('value', Number(value) || parseFloat(value) || '')
           );
 
         case 't':
