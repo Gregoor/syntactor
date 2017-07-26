@@ -378,7 +378,9 @@ export default class Editor extends PureComponent {
 
         case 'n':
           event.preventDefault();
-          return this.replace(NumericNode);
+          return this.replace(
+            NumericNode.set('value', Number(this.getSelectedNode().get('value')) || '')
+          );
 
         case 't':
         case 'f':
