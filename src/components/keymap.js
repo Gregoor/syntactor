@@ -72,6 +72,7 @@ export default class Keymap extends PureComponent {
   
   render() {
     const {isInArray, selected, selectedNode} = this.props;
+    const itemType = isInArray ? 'element' : 'property';
     return (
       <div>
         <NavigateSection/>
@@ -81,7 +82,13 @@ export default class Keymap extends PureComponent {
             Insert {isInArray || isArrayExpression(selectedNode) ? 'element' : 'property'}
           </KeyInfo>
           <KeyInfo keys={['Ctrl + d']}>
-            Delete {isInArray ? 'element' : 'property'}
+            Delete {itemType}
+          </KeyInfo>
+          <KeyInfo keys={['Alt + ⬆']}>
+            Move {itemType} up
+          </KeyInfo>
+          <KeyInfo keys={['Alt + ⬇']}>
+            Move {itemType} down
           </KeyInfo>
           {selectedNode && (
             <div>

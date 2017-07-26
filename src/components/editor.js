@@ -252,6 +252,31 @@ export default class Editor extends PureComponent {
     });
   }
 
+  moveSelected(direction: Direction) {
+    if (!['UP', 'DOWN'].includes(direction)) return;
+
+    this.addToHistory((root, selected) => {
+      const collectionPath = this.getClosestCollectionPath(root, selected);
+      const itemIndex = selected.last() === 'end'
+        ? collectionPath.size
+        : selected.get(collectionPath.size) || 0;
+      const itemPath = collectionPath.push(itemIndex);
+      const newItemIndex = parseInt(itemIndex + (direction === 'UP' ? -1 : 1), 10);
+      const newItemPath = collectionPath.push(newItemIndex);
+      const targetItem = root.getIn(newItemPath);
+
+      if (newItemIndex < 0 || !targetItem) {
+        return
+      }
+      return {
+        root: root
+          .updateIn(itemPath, () => targetItem)
+          .updateIn(newItemPath, () => root.getIn(itemPath)),
+        selected: selected.update(collectionPath.size, () => newItemIndex)
+      }
+    });
+  }
+
   undo() {
     this.setState(({future, history}) => ({
       future: future.unshift(history.first()),
@@ -313,7 +338,7 @@ export default class Editor extends PureComponent {
 
     const direction = this.getDirection(key);
     const selectedInput: any = this.root.getSelectedInput();
-    if (direction && (
+    if (!altKey && direction && (
         ['UP', 'DOWN'].includes(direction) || !selectedInput
         || !between(selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1), 0, selectedInput.value.length)
     )) {
@@ -377,6 +402,10 @@ export default class Editor extends PureComponent {
         default:
 
       }
+    }
+
+    if (direction && altKey) {
+      this.moveSelected(direction);
     }
 
     if (key === 'Enter') {
