@@ -45,6 +45,7 @@ const NullNode = new Map({type: 'NullLiteral'});
 const StringNode = new Map({type: 'StringLiteral', value: ''});
 const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
 const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
+const ObjectProperty = new Map({type: 'ObjectProperty', key: StringNode, value: NullNode});
 
 const Container = styled.div`
   position: relative;
@@ -208,7 +209,7 @@ export default class Editor extends PureComponent {
       itemIndex,
       isArray
         ? node
-        : new Map({type: 'ObjectProperty', key: StringNode, value: node})
+        : ObjectProperty.set('value', node)
     ));
     let newSelected = collectionPath.push(itemIndex);
     if (!isArray) newSelected = newSelected.push('key');
@@ -393,12 +394,14 @@ export default class Editor extends PureComponent {
         case 'a':
         case '[':
           event.preventDefault();
-          return this.replace(ArrayNode);
+          return this.replace(ArrayNode.set('elements', List.of(this.getSelectedNode())));
 
         case 'o':
         case '{':
           event.preventDefault();
-          return this.replace(ObjectNode);
+          return this.replace(
+            ObjectNode.set('properties', List.of(ObjectProperty.set('key', this.getSelectedNode())))
+          );
 
         case '.':
           event.preventDefault();
