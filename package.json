@@ -31,12 +31,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build-lib": "babel --out-dir lib/ --ignore test.js src/",
+    "build-prod": "NODE_ENV=production npm run build-lib && npm run build",
     "test": "react-scripts test --env=jsdom",
     "test-CI": "CI=true npm run test",
     "flow": "flow",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "release": "NODE_ENV=production npm run build-lib && npm run build && hubup $(find build/static/js/ -iname '*.js')"
+    "release": "npm run build-prod && hubup $(find build/static/js/ -iname '*.js') '{\"name\":\"syntactor.min.js\"}'"
   },
   "pre-commit": [
     "flow",
