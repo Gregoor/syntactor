@@ -1,10 +1,14 @@
 {
   "name": "syntactor",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "homepage": "https://gregoor.github.io/syntactor",
   "license": "MIT",
   "private": false,
   "main": "lib/api",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gregoor/syntactor.git"
+  },
   "dependencies": {
     "babel-generator": "^6.24.1",
     "babylon": "^6.15.0",
@@ -18,20 +22,21 @@
     "babel-preset-react-app": "3.0.0",
     "flow-bin": "^0.42.0",
     "gh-pages": "1.0.0",
+    "hubup": "^1.0.1",
     "jest-immutable-matchers": "^1.4.0",
     "pre-commit": "^1.2.2",
     "react-scripts": "1.0.6"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build-demo": "react-scripts build",
-    "build-lib": "babel -d lib/ --ignore test.js src/",
+    "build": "react-scripts build",
+    "build-lib": "babel --out-dir lib/ --ignore test.js src/",
     "test": "react-scripts test --env=jsdom",
     "test-CI": "CI=true npm run test",
     "flow": "flow",
-    "predeploy": "npm run build-demo",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "prepublish": "NODE_ENV=production npm run build-lib"
+    "release": "NODE_ENV=production npm run build-lib && npm run build && hubup $(find build/static/js/ -iname '*.js')"
   },
   "pre-commit": [
     "flow",
