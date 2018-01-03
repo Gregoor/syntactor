@@ -74,6 +74,13 @@ declare type Props = {
 
 declare type EditorState = Map<any, any>;
 
+const INCREMENTS = {
+  i: 1,
+  I: 10,
+  d: -1,
+  D: -10
+};
+
 export default class Editor extends PureComponent {
 
   static defaultProps = {
@@ -351,9 +358,10 @@ export default class Editor extends PureComponent {
       }));
     }
 
-    if (isNumericLiteral(this.getSelectedNode()) && ['+', '-'].includes(key)) {
+    const increment = INCREMENTS[key];
+    if (isNumericLiteral(this.getSelectedNode()) && increment !== undefined) {
       event.preventDefault();
-      return this.updateValue((value) => value + (key === '+' ? 1 : -1));
+      return this.updateValue((value) => parseFloat(value) + increment);
     }
 
 

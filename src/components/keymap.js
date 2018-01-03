@@ -15,7 +15,7 @@ class KeyInfo extends PureComponent {
     const {children, keys} = this.props;
     return (
       <div>
-        <span style={{display: 'inline-block', width: 100}}>
+        <span style={{display: 'inline-block', width: 120}}>
           {keys.map((key, i) => [
             <kbd style={{fontWeight: 'bold'}}>{key}</kbd>,
             i + 1 < keys.length ? ' | ' : ''
@@ -69,14 +69,17 @@ class GeneralSection extends PureComponent {
 }
 
 export default class Keymap extends PureComponent {
-  
+
   render() {
     const {isInArray, selected, selectedNode} = this.props;
     const itemType = isInArray ? 'element' : 'property';
+    const isKeySelected = selected.last() === 'key';
+    const selectedIsNullLiteral = !isKeySelected && isNullLiteral(selectedNode);
+    const selectedIsNumericLiteral = selectedNode && isNumericLiteral(selectedNode);
     return (
       <div>
         <NavigateSection/>
-        <GeneralSection/>
+
         <KeySection title="Modify">
           <KeyInfo keys={['Enter']}>
             Insert {isInArray || isArrayExpression(selectedNode) ? 'element' : 'property'}
@@ -90,20 +93,19 @@ export default class Keymap extends PureComponent {
           <KeyInfo keys={['Alt + ⬇']}>
             Move {itemType} down
           </KeyInfo>
-          {selectedNode && (
-            <div>
-              {isBooleanLiteral(selectedNode) && (
-                <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
-              )}
-              {isNumericLiteral(selectedNode) && (
-                <KeyInfo keys={['Alt + +', '-']}>Increment/Decrement</KeyInfo>
-              )}
-            </div>
+          {selectedNode && isBooleanLiteral(selectedNode) && (
+            <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
+          )}
+          {selectedIsNumericLiteral && (
+            <React.Fragment>
+              <KeyInfo keys={['i', 'd']}>Inc-/Decrement</KeyInfo>
+              <KeyInfo keys={['Shift + i', 'd']}>Inc-/Decrement by 10</KeyInfo>
+            </React.Fragment>
           )}
         </KeySection>
 
-        {selected.last() !== 'key' && (
-          <KeySection title={'Change type to' + (isNullLiteral(selectedNode) ? '' : ' (Alt +) ')}>
+        {!isKeySelected && (
+          <KeySection title="Change type">
             {[
               [isStringLiteral, ['s', '\''], 'String'],
               [isNumericLiteral, ['n'], 'Number'],
@@ -113,10 +115,16 @@ export default class Keymap extends PureComponent {
               [isObjectExpression, ['o', String.fromCharCode(123)], 'Object'],
               [isNullLiteral, ['.'], 'Null']
             ].map(([checkFn, keys, label]) => (
-              !checkFn(selectedNode) && <KeyInfo key={label} keys={keys}>{label}</KeyInfo>
+              !checkFn(selectedNode) && (
+                <KeyInfo key={label} keys={selectedIsNullLiteral ? keys : ['Alt + ' + keys[0]]}>
+                  {label}
+                </KeyInfo>
+              )
             ))}
           </KeySection>
         )}
+
+        <GeneralSection/>
       </div>
     );
   }
