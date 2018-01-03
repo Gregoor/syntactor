@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import {List} from 'immutable';
 import styled from 'styled-components';
 
-import type {Direction, TypeElementProps} from '../types';
+import type {Direction, ASTNodeProps} from '../types';
 import styles from '../utils/styles';
 import Highlightable from './highlightable';
 import TypeElement from './type-element';
@@ -164,7 +164,7 @@ export class NullLiteral extends TypeElement {
 
 export class StringLiteral extends PureComponent {
 
-  props: TypeElementProps & {
+  props: ASTNodeProps & {
     style?: any
   };
 

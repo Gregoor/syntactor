@@ -3,7 +3,7 @@ import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import {is, List} from 'immutable';
 
-import type {TypeElementProps} from '../types';
+import type {ASTNodeProps} from '../types';
 import Highlightable from './highlightable';
 import TypeElement from './type-element';
 
@@ -26,7 +26,7 @@ const Symbol = styled.span`
 
 class CollectionExpression extends PureComponent {
 
-  props: TypeElementProps & {
+  props: ASTNodeProps & {
     children?: any,
     openString: string,
     closeString: string

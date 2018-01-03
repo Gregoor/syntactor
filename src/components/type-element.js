@@ -1,7 +1,7 @@
 import React from 'react';
 import Immutable, {List} from 'immutable';
 
-import {TypeElementProps} from '../types';
+import {ASTNodeProps} from '../types';
 
 let TypeElements = {};
 
@@ -11,7 +11,7 @@ export function injectTypeElements(value) {
 
 export default class TypeElement extends React.Component {
 
-  props: TypeElementProps;
+  props: ASTNodeProps;
 
   static defaultProps = {
     level: 0,
