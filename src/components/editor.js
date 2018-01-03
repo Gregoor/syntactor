@@ -219,9 +219,10 @@ export default class Editor extends PureComponent {
     };
   });
 
-  replace(node: Map<string, any>) {
+  replace(node: Map<string, any>, subSelected: ASTPath = List.of()) {
     this.addToHistory((root, selected) => ({
-      root: root.updateIn(selected, () => node)
+      root: root.updateIn(selected, () => node),
+      selected: selected.concat(subSelected)
     }));
   }
 
@@ -400,7 +401,8 @@ export default class Editor extends PureComponent {
         case '{':
           event.preventDefault();
           return this.replace(
-            ObjectNode.set('properties', List.of(ObjectProperty.set('key', this.getSelectedNode())))
+            ObjectNode.set('properties', List.of(ObjectProperty.set('value', this.getSelectedNode()))),
+            List.of('properties', 0, 'key')
           );
 
         case '.':
