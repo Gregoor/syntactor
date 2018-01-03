@@ -24,23 +24,17 @@
     "gh-pages": "1.1.0",
     "hubup": "^1.0.1",
     "jest-immutable-matchers": "^1.4.0",
-    "pre-commit": "^1.2.2",
     "react-scripts": "^1.0.17"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build-lib": "babel --out-dir lib/ --ignore test.js src/",
-    "build-prod": "NODE_ENV=production npm run build-lib && npm run build",
+    "build-prod": "NODE_ENV=production yarn build-lib && yarn build",
     "test": "react-scripts test --env=jsdom",
-    "test-CI": "CI=true npm run test",
     "flow": "flow",
-    "predeploy": "npm run build",
+    "predeploy": "yarn build",
     "deploy": "gh-pages -d build",
-    "release": "npm run build-prod && hubup $(find build/static/js/ -iname '*.js') '{\"name\":\"syntactor.min.js\"}'"
-  },
-  "pre-commit": [
-    "flow",
-    "test-CI"
-  ]
+    "release": "yarn build-prod && hubup $(find build/static/js/ -iname '*.js') '{\"name\":\"syntactor.min.js\"}'"
+  }
 }
