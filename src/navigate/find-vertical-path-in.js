@@ -1,15 +1,11 @@
 // @flow
 import {List} from 'immutable';
 
+import {isLiteral} from '../utils/checks';
 import type {ASTNode, ASTKey, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
 const verticalKeys: List<string> = List.of('elements', 'properties', 'key', 'value');
-
-const literals = ['StringLiteral', 'NullLiteral', 'NumericLiteral', 'BooleanLiteral'];
-function isLiteral(node?: ASTNode) {
-  return node && literals.includes(node.get('type'));
-}
 
 function isNodeKeyOf(node: ASTNode) {
   return (key: ASTKey) => node.keySeq().includes(key.toString());

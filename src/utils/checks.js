@@ -5,6 +5,11 @@ function compareType(node?: ASTNode, type: string) {
   return node && node.get('type') === type;
 }
 
+const literals = ['StringLiteral', 'NullLiteral', 'NumericLiteral', 'BooleanLiteral'];
+export function isLiteral(node?: ASTNode) {
+  return node && literals.includes(node.get('type'));
+}
+
 export function isBooleanLiteral(node?: ASTNode) {
   return compareType(node, 'BooleanLiteral');
 }

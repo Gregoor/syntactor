@@ -1,6 +1,7 @@
 // @flow
 import {is} from 'immutable';
 
+import {isLiteral} from '../utils/checks';
 import type {ASTNode, ASTPath, Direction, HorizontalDirection, VerticalDirection} from '../types';
 import findVerticalNeighborPath from './find-vertical-neighbor-path';
 import findVerticalPathIn from './find-vertical-path-in';
@@ -17,7 +18,10 @@ function traverseVertically(direction: VerticalDirection, ast: any/*ASTNode*/, p
       && !(isUp && path.last() === 'end')
     )
   ) return neighborPath;
-  return neighborPath.concat(findVerticalPathIn(direction, ast.getIn(neighborPath)));
+  const newPath = ((neighborPath.concat(findVerticalPathIn(direction, ast.getIn(neighborPath))): any): ASTPath);
+  return path.last() === 'value' && newPath.last() === 'key' && isLiteral(ast.getIn(newPath))
+    ? newPath.set(-1, 'value')
+    : newPath;
 }
 
 function traverseHorizontally(direction: HorizontalDirection, ast: any/*ASTNode*/, path: ASTPath) {
