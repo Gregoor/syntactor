@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import * as Immutable from 'immutable';
 import generate from 'babel-generator';
 
-import type {ASTNode, ASTPath, Direction} from '../types';
+import type {ASTNode, ASTPath, Direction, VerticalDirection} from '../types';
 import {ArrayExpression, ObjectExpression} from './collections';
 import Keymap from './keymap';
 import {BooleanLiteral, NumericLiteral, NullLiteral, StringLiteral} from './literals';
@@ -15,6 +15,7 @@ import {
   isNumericLiteral,
   isArrayExpression,
   isObjectExpression,
+  isObjectProperty,
   isEditable
 } from '../utils/checks';
 import navigate from '../navigate/index';
@@ -264,30 +265,63 @@ export default class Editor extends PureComponent<Props, {
     });
   }
 
-  moveSelected(direction: Direction) {
-    if (!['UP', 'DOWN'].includes(direction)) return;
+  moveSelected = (direction: VerticalDirection) => this.addToHistory((root, selected) => {
+    const isMoveUp = direction === 'UP';
 
-    this.addToHistory((root, selected) => {
-      const collectionPath = this.getClosestCollectionPath(root, selected);
-      const itemIndex = selected.last() === 'end'
-        ? collectionPath.size
-        : selected.get(collectionPath.size) || 0;
-      const itemPath = collectionPath.push(itemIndex);
-      const newItemIndex = parseInt(itemIndex + (direction === 'UP' ? -1 : 1), 10);
-      const newItemPath = collectionPath.push(newItemIndex);
-      const targetItem = root.getIn(newItemPath);
+    const collectionPath = this.getClosestCollectionPath(root, selected);
 
-      if (newItemIndex < 0 || !targetItem) {
-        return
-      }
+    const itemIndex = selected.last() === 'end'
+      ? collectionPath.size
+      : selected.get(collectionPath.size) || 0;
+    const itemPath = collectionPath.push(itemIndex);
+    const item = root.getIn(itemPath);
+    const isItemObjectProperty = isObjectProperty(item);
+
+    const newItemIndex = parseInt(itemIndex, 10) + (isMoveUp ? -1 : 1);
+    const newItemPath = collectionPath.push(newItemIndex);
+    const targetItem = root.getIn(newItemPath);
+
+    if (isItemObjectProperty && isObjectProperty(targetItem) && isObjectExpression(targetItem.get('value'))) {
+      const targetObjectPath = newItemPath.push('value', 'properties');
+      const targetIndex = isMoveUp ? root.getIn(targetObjectPath).size : 0;
       return {
         root: root
-          .updateIn(itemPath, () => targetItem)
-          .updateIn(newItemPath, () => root.getIn(itemPath)),
-        selected: selected.update(collectionPath.size, () => newItemIndex)
+          .updateIn(targetObjectPath, (collection) => collection.insert(targetIndex, item))
+          .updateIn(collectionPath, (collection) => collection.delete(itemIndex)),
+        selected: collectionPath
+          .push(newItemIndex + (isMoveUp ? 0 : -1), 'value', 'properties', targetIndex)
+          .concat(selected.slice(collectionPath.size + 1))
+      };
+    }
+
+    if (newItemIndex < 0 || !targetItem) {
+      const collectionIndexPath = newItemPath.slice(0, -3);
+      const parentCollectionPath = this.getClosestCollectionPath(root, collectionIndexPath);
+
+      if (!isItemObjectProperty || !isObjectExpression(root.getIn(parentCollectionPath.butLast()))) {
+        return;
       }
-    });
-  }
+
+      const collectionIndex = collectionIndexPath.last() === 'end'
+        ? parentCollectionPath.size
+        : selected.get(parentCollectionPath.size) || 0;
+      const newItemIndex = parseInt(collectionIndex, 10) + (isMoveUp ? 0 : 1);
+
+      return {
+        root: root
+          .updateIn(collectionPath, (collection) => collection.delete(itemIndex))
+          .updateIn(parentCollectionPath, (collection) => collection.insert(newItemIndex, item)),
+        selected: parentCollectionPath.push(newItemIndex).concat(selected.slice(itemPath.size))
+      };
+    }
+
+    return {
+      root: root
+        .updateIn(itemPath, () => targetItem)
+        .updateIn(newItemPath, () => item),
+      selected: selected.update(collectionPath.size, () => newItemIndex)
+    };
+  });
 
   undo() {
     this.setState(({future, history}) => ({
@@ -424,7 +458,7 @@ export default class Editor extends PureComponent<Props, {
       }
     }
 
-    if (direction && altKey) {
+    if (altKey && (direction === 'UP' || direction === 'DOWN')) {
       this.moveSelected(direction);
     }
 

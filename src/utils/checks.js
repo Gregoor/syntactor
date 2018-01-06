@@ -29,6 +29,10 @@ export function isObjectExpression(node?: ASTNode) {
   return compareType(node, 'ObjectExpression');
 }
 
+export function isObjectProperty(node?: ASTNode) {
+  return compareType(node, 'ObjectProperty');
+}
+
 export function isEditable(node?: ASTNode) {
   return node && (isStringLiteral(node) || isNumericLiteral(node));
 }
