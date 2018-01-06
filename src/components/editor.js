@@ -16,7 +16,7 @@ import {
   isArrayExpression,
   isObjectExpression,
   isObjectProperty,
-  isEditable
+  isEditable, isLiteral
 } from '../utils/checks';
 import navigate from '../navigate/index';
 import parse from '../utils/parse';
@@ -188,7 +188,10 @@ export default class Editor extends PureComponent<Props, {
   }
 
   insert = (node: ASTNode) => this.addToHistory((root, selected) => {
-    const collectionPath = this.getClosestCollectionPath(root, selected);
+    const collectionPath = this.getClosestCollectionPath(
+      root,
+      selected.last() === 'end' ? selected.slice(0, -3) : selected
+    );
     const itemIndex = selected.last() === 'end'
       ? collectionPath.size
       : selected.get(collectionPath.size) + 1 || 0;
@@ -216,7 +219,7 @@ export default class Editor extends PureComponent<Props, {
     }));
   }
 
-  changeSelected = (changeFn: (root: ASTNode, selected: ASTPath) => {direction?: Direction, selected: ASTPath}) => {
+  changeSelected = (changeFn: (root: any/*ASTNode*/, selected: ASTPath) => {direction?: Direction, selected: ASTPath}) => {
     return this.addToHistory((root, selected) => {
       const {direction, selected: newSelected} = changeFn(root, selected);
       this.lastDirection = direction;
@@ -367,15 +370,22 @@ export default class Editor extends PureComponent<Props, {
       ArrowRight: 'RIGHT',
     }[key];
     const selectedInput: any = this.root.getSelectedInput();
+    const isVerticalDirection = ['UP', 'DOWN'].includes(direction);
     if (!altKey && direction && (
-        ['UP', 'DOWN'].includes(direction) || !selectedInput
+        isVerticalDirection || !selectedInput
         || !between(selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1), 0, selectedInput.value.length)
     )) {
       event.preventDefault();
-      return this.changeSelected((root, selected) => ({
-        direction,
-        selected: navigate(direction, root, selected)
-      }));
+      return this.changeSelected((root, selected) => {
+        const newSelected = navigate(direction, root, selected);
+        return ({
+          direction,
+          selected: isVerticalDirection && selected.last() === 'value' && newSelected.last() === 'key'
+            && isLiteral(root.getIn(selected)) && isLiteral(root.getIn(newSelected))
+            ? newSelected.set(-1, 'value')
+            : newSelected
+        });
+      });
     }
 
     const increment = INCREMENTS[key];
