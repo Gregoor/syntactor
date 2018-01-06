@@ -165,27 +165,6 @@ export default class Editor extends PureComponent<Props, {
     return selected.slice(0, index + 1);
   }
 
-  getDirection(key: string) {
-    switch (key) {
-
-      case 'ArrowUp':
-        return 'UP';
-
-      case 'ArrowDown':
-        return 'DOWN';
-
-      case 'ArrowLeft':
-        return 'LEFT';
-
-      case 'ArrowRight':
-        return 'RIGHT';
-
-      default:
-        return;
-
-    }
-  }
-
   addToHistory(updateFn: (root: any/*ASTNode*/, selected: ASTPath) => any) {
     this.setState(({history}) => {
       let {root, selected} = history.first() || {};
@@ -381,7 +360,12 @@ export default class Editor extends PureComponent<Props, {
   handleKeyDown = (event: any) => {
     const {altKey, ctrlKey, key} = event;
 
-    const direction = this.getDirection(key);
+    const direction = {
+      ArrowUp: 'UP',
+      ArrowDown: 'DOWN',
+      ArrowLeft: 'LEFT',
+      ArrowRight: 'RIGHT',
+    }[key];
     const selectedInput: any = this.root.getSelectedInput();
     if (!altKey && direction && (
         ['UP', 'DOWN'].includes(direction) || !selectedInput
