@@ -18,10 +18,12 @@ class KeyInfo extends PureComponent<any> {
     return (
       <div>
         <span style={{display: 'inline-block', width: 120}}>
-          {keys.map((key, i) => [
-            <kbd style={{fontWeight: 'bold'}}>{key}</kbd>,
-            i + 1 < keys.length ? ' | ' : ''
-          ])}
+          {keys.map((key, i) => (
+            <Fragment key={key}>
+              <kbd style={{fontWeight: 'bold'}}>{key}</kbd>
+              {i + 1 < keys.length ? ' | ' : ''}
+            </Fragment>
+          ))}
         </span>
         <span>{children}</span>
       </div>
