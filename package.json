@@ -22,7 +22,6 @@
     "babel-preset-react-app": "^3.1.0",
     "flow-bin": "^0.62.0",
     "gh-pages": "1.1.0",
-    "hubup": "^1.0.1",
     "jest-immutable-matchers": "^1.4.0",
     "react-scripts": "^1.0.17"
   },
@@ -34,7 +33,6 @@
     "test": "yarn flow && react-scripts test --env=jsdom",
     "flow": "flow",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d build",
-    "release": "yarn build-prod && hubup $(find build/static/js/ -iname '*.js') '{\"name\":\"syntactor.min.js\"}'"
+    "deploy": "gh-pages -d build"
   }
 }
