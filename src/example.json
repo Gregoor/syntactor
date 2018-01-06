@@ -1,46 +1,12 @@
 {
-  "name": "syntactor",
-  "version": "1.1.0",
-  "homepage": "https://gregoor.github.io/syntactor",
-  "license": "MIT",
-  "private": false,
-  "main": "lib/api",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Gregoor/syntactor.git"
+  "WelcomeTo": "Syntactor",
+  "Version": 1.2,
+  "In Development": true,
+  "Goals": {
+    "Manage syntax and code style": ["No Syntax Errors", "No Bikeshedding"],
+    "Make common code transformations accessible": ["just as many or less keystrokes, compared to other editors"]
   },
-  "dependencies": {
-    "babel-generator": "^6.26.0",
-    "babylon": "^6.18.0",
-    "immutable": "^3.8.2",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "styled-components": "^2.2.4"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-react-app": "^3.1.0",
-    "flow-bin": "^0.42.0",
-    "gh-pages": "1.1.0",
-    "hubup": "^1.0.1",
-    "jest-immutable-matchers": "^1.4.0",
-    "pre-commit": "^1.2.2",
-    "react-scripts": "^1.0.17"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build-lib": "babel --out-dir lib/ --ignore test.js src/",
-    "build-prod": "NODE_ENV=production npm run build-lib && npm run build",
-    "test": "react-scripts test --env=jsdom",
-    "test-CI": "CI=true npm run test",
-    "flow": "flow",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "release": "npm run build-prod && hubup $(find build/static/js/ -iname '*.js') '{\"name\":\"syntactor.min.js\"}'"
-  },
-  "pre-commit": [
-    "flow",
-    "test-CI"
-  ]
+  "Features": ["Dynamic Keymap (->)", "Move elements/Change types without a hassle", "Redo + Undo"],
+  "Current State": "Only a JSON-Editor",
+  "How-To": ["Arrow Keys to navigate", "Keymap on the right shows you all possible actions"]
 }

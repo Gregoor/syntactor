@@ -35,7 +35,9 @@ const Card = styled.div`
 `;
 
 const Nav = styled.div`
-  margin-bottom: 20px;
+  margin: 0 -20px 20px;
+  padding: 0 20px 20px;
+  border-bottom: 1px solid lightgrey;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -59,20 +61,8 @@ export default class Demo extends PureComponent<{}> {
             ))}
             <Symbol>]</Symbol>
           </Nav>
-          <div>
-            An editor with two basic goals:
-            <ol>
-              <li>Manage syntax and code style (no syntax errors, no bikeshedding)</li>
-              <li>
-                Common code transformations in just as many or less keystrokes,
-                compared to other editors
-              </li>
-            </ol>
-            For now, it's only a JSON editor.
-          </div>
+          <Editor initiallyShowKeymap defaultValue={example}/>
         </Card>
-
-        <Card><Editor initiallyShowKeymap defaultValue={example}/></Card>
       </div>
     );
   }
