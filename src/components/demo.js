@@ -47,7 +47,7 @@ export default class Demo extends PureComponent<{}> {
 
   render() {
     return (
-      <div style={{maxWidth: 800, margin: '0 auto'}}>
+      <div style={{maxWidth: 950, margin: '0 auto'}}>
         <Head><Brace charCode={123}/>Syntactor<Brace charCode={125}/></Head>
 
         <Card style={{marginBottom: 10}}>

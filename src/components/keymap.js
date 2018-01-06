@@ -17,7 +17,7 @@ class KeyInfo extends PureComponent<any> {
     const {children, keys} = this.props;
     return (
       <div>
-        <span style={{display: 'inline-block', width: 120}}>
+        <span style={{display: 'inline-flex', alignItems: 'center', width: 120, height: 20}}>
           {keys.map((key, i) => (
             <Fragment key={key}>
               <kbd style={{fontWeight: 'bold'}}>{key}</kbd>
@@ -39,23 +39,6 @@ const KeySection = ({children, title}) => (
     {children}
   </div>
 );
-
-class NavigateSection extends PureComponent<{}> {
-
-  render() {
-    return (
-      <KeySection title="Navigate">
-        <KeyInfo keys={['Left']}>Left</KeyInfo>
-        <KeyInfo keys={['Right']}>Right</KeyInfo>
-        <KeyInfo keys={['Up']}>Up</KeyInfo>
-        <KeyInfo keys={['Down']}>Down</KeyInfo>
-        <KeyInfo keys={['Tab']}>To next editable</KeyInfo>
-        <KeyInfo keys={['+ Shift']}>To previous editable</KeyInfo>
-      </KeySection>
-    )
-  }
-
-}
 
 class GeneralSection extends PureComponent<{}> {
 
@@ -82,8 +65,6 @@ export default class Keymap extends PureComponent<any> {
     const selectedIsNumericLiteral = selectedNode && isNumericLiteral(selectedNode);
     return (
       <div>
-        <NavigateSection/>
-
         <KeySection title="Modify">
           <KeyInfo keys={['Enter']}>
             Insert {isInArray || isArrayExpression(selectedNode) ? 'element' : 'property'}

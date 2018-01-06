@@ -4,7 +4,7 @@
   "In Development": true,
   "Goals": {
     "Manage syntax and code style": ["No Syntax Errors", "No Bikeshedding"],
-    "Make common code transformations accessible": ["just as many or less keystrokes, compared to other editors"]
+    "Make common code transformations accessible": ["Just as many or less keystrokes, compared to other editors"]
   },
   "Features": ["Dynamic Keymap (->)", "Move elements/Change types without a hassle", "Redo + Undo"],
   "Current State": "Only a JSON-Editor",
