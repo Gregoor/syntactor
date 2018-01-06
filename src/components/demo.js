@@ -41,7 +41,7 @@ const Nav = styled.div`
   justify-content: space-between;
 `;
 
-export default class Demo extends PureComponent {
+export default class Demo extends PureComponent<{}> {
 
   render() {
     return (

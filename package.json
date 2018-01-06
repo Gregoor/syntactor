@@ -12,15 +12,15 @@
   "dependencies": {
     "babel-generator": "^6.26.0",
     "babylon": "^6.18.0",
-    "immutable": "^3.8.2",
+    "immutable": "4.0.0-rc.9",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "styled-components": "^2.2.4"
+    "styled-components": "^2.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-react-app": "^3.1.0",
-    "flow-bin": "^0.42.0",
+    "flow-bin": "^0.62.0",
     "gh-pages": "1.1.0",
     "hubup": "^1.0.1",
     "jest-immutable-matchers": "^1.4.0",
@@ -31,7 +31,7 @@
     "build": "react-scripts build",
     "build-lib": "babel --out-dir lib/ --ignore test.js src/",
     "build-prod": "NODE_ENV=production yarn build-lib && yarn build",
-    "test": "react-scripts test --env=jsdom",
+    "test": "yarn flow && react-scripts test --env=jsdom",
     "flow": "flow",
     "predeploy": "yarn build",
     "deploy": "gh-pages -d build",

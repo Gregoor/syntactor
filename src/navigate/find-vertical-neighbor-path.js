@@ -1,7 +1,7 @@
 // @flow
 import {List} from 'immutable';
 
-import type {ASTNode, ASTPath, VerticalDirection} from '../types';
+import type {ASTPath, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
 function updateLastIndex(path: ASTPath, direction: VerticalDirection, size) {
@@ -12,7 +12,7 @@ function updateLastIndex(path: ASTPath, direction: VerticalDirection, size) {
 }
 
 export default function findVerticalNeighborPath(
-  direction: VerticalDirection, ast: ASTNode, startPath: ASTPath
+  direction: VerticalDirection, ast: any/*ASTNode*/, startPath: ASTPath
 ) {
   return function find(path) {
     const isUp = direction === 'UP';

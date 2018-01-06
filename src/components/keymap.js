@@ -9,7 +9,9 @@ import {
   isObjectExpression
 } from '../utils/checks';
 
-class KeyInfo extends PureComponent {
+const {Fragment} = (React: any);
+
+class KeyInfo extends PureComponent<any> {
 
   render() {
     const {children, keys} = this.props;
@@ -36,7 +38,7 @@ const KeySection = ({children, title}) => (
   </div>
 );
 
-class NavigateSection extends PureComponent {
+class NavigateSection extends PureComponent<{}> {
 
   render() {
     return (
@@ -53,7 +55,7 @@ class NavigateSection extends PureComponent {
 
 }
 
-class GeneralSection extends PureComponent {
+class GeneralSection extends PureComponent<{}> {
 
   render() {
     return (
@@ -68,7 +70,7 @@ class GeneralSection extends PureComponent {
 
 }
 
-export default class Keymap extends PureComponent {
+export default class Keymap extends PureComponent<any> {
 
   render() {
     const {isInArray, selected, selectedNode} = this.props;
@@ -97,10 +99,10 @@ export default class Keymap extends PureComponent {
             <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
           )}
           {selectedIsNumericLiteral && (
-            <React.Fragment>
+            <Fragment>
               <KeyInfo keys={['i', 'd']}>Inc-/Decrement</KeyInfo>
               <KeyInfo keys={['Shift + i', 'd']}>Inc-/Decrement by 10</KeyInfo>
-            </React.Fragment>
+            </Fragment>
           )}
         </KeySection>
 

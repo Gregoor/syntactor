@@ -24,13 +24,11 @@ const Symbol = styled.span`
   color: grey;
 `;
 
-class CollectionExpression extends PureComponent {
-
-  props: ASTNodeProps & {
-    children?: any,
-    openString: string,
-    closeString: string
-  };
+class CollectionExpression extends PureComponent<ASTNodeProps & {
+  children?: any,
+  openString: string,
+  closeString: string
+}> {
 
   handleSelect = () => {
     const {onSelect, path} = this.props;

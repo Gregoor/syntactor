@@ -2,7 +2,7 @@
 import {List, Map} from 'immutable';
 
 export type ASTKey = string | number;
-export type ASTNode = Map<string, ASTNode>
+export type ASTNode = Map<string, ASTNode | List<ASTNode> | string | boolean | number>;
 export type ASTPath = List<ASTKey>;
 
 export type VerticalDirection = 'UP' | 'DOWN';
@@ -13,7 +13,7 @@ export type ASTNodeProps = {
   lastDirection?: Direction,
   level: number,
   node: ASTNode,
-  onSelect: () => ASTPath,
+  onSelect: (ASTPath) => ASTPath,
   path: ASTPath,
   selected?: ASTPath,
 };

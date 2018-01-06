@@ -23,12 +23,12 @@ function findChildKey(node: ASTNode, keys: List<string>): [?ASTKey, ?ASTNode] {
   const childNode = node.get(childKey);
   keys = keys.slice(keys.indexOf(childKey) + 1);
 
-  if (childNode) return [childKey, childNode];
+  if (childNode) return [childKey, ((childNode: any): ASTNode)];
   else if (keys.isEmpty() || !childKey) return [null, null];
   else return findChildKey(node, keys);
 }
 
-export default function findVerticalPathIn(direction: VerticalDirection, node?: ASTNode) {
+export default function findVerticalPathIn(direction: VerticalDirection, node?: any/*ASTNode*/) {
   if (!node || isLiteral(node)) return new List();
 
   const isUp = direction === 'UP';
@@ -39,7 +39,7 @@ export default function findVerticalPathIn(direction: VerticalDirection, node?: 
 
   const [childKey, childNode] = findChildKey(node, isUp ? verticalKeys.reverse() : verticalKeys);
 
-  if (!isUp && (!childKey || !childNode || childNode.get('type') === 'ObjectExpression')) {
+  if (!childKey || (!isUp && (!childKey || !childNode || childNode.get('type') === 'ObjectExpression'))) {
     return new List();
   }
 

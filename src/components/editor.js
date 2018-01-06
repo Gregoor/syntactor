@@ -39,13 +39,13 @@ injectTypeElements({
   ObjectExpression
 });
 
-const BooleanNode = new Map({type: 'BooleanLiteral', value: true});
-const NumericNode = new Map({type: 'NumericLiteral', value: ''});
-const NullNode = new Map({type: 'NullLiteral'});
-const StringNode = new Map({type: 'StringLiteral', value: ''});
-const ArrayNode = Immutable.fromJS({type: 'ArrayExpression', elements: []});
-const ObjectNode = Immutable.fromJS({type: 'ObjectExpression', properties: []});
-const ObjectProperty = new Map({type: 'ObjectProperty', key: StringNode, value: NullNode});
+const BooleanNode = Map({type: 'BooleanLiteral', value: true});
+const NumericNode = Map({type: 'NumericLiteral', value: ''});
+const NullNode = Map({type: 'NullLiteral'});
+const StringNode = Map({type: 'StringLiteral', value: ''});
+const ArrayNode = Map({type: 'ArrayExpression', elements: List()});
+const ObjectNode = Map({type: 'ObjectExpression', properties: List()});
+const ObjectProperty = Map({type: 'ObjectProperty', key: StringNode, value: NullNode});
 
 const Container = styled.div`
   position: relative;
@@ -72,7 +72,10 @@ declare type Props = {
   defaultValue: {}
 };
 
-declare type EditorState = Map<any, any>;
+declare type EditorState = {
+  +root: any, // should be ASTNode, but Flow bugs. Check again in later versions (also for all "any/*ASTNode*/")
+  +selected: ASTPath
+};
 
 const INCREMENTS = {
   i: 1,
@@ -81,17 +84,15 @@ const INCREMENTS = {
   D: -10
 };
 
-export default class Editor extends PureComponent {
+export default class Editor extends PureComponent<Props, {
+  future: List<EditorState>,
+  history: List<EditorState>,
+  showKeymap: boolean
+}> {
 
   static defaultProps = {
     initiallShowKeymap: true,
     defaultValue: {}
-  };
-
-  state: {
-    future: List<EditorState>,
-    history: List<EditorState>,
-    showKeymap: boolean
   };
 
   lastDirection: any;
@@ -101,12 +102,12 @@ export default class Editor extends PureComponent {
   constructor(props: Props) {
     super(props);
     this.state = {
-      future: new List(),
-      history: new List([
-        new Map({
+      future: List(),
+      history: List([
+        {
           root: parse(props.defaultValue),
-          selected: new List()
-        })
+          selected: List()
+        }
       ]),
       showKeymap: props.initiallyShowKeymap
     };
@@ -139,12 +140,16 @@ export default class Editor extends PureComponent {
 
   bindRoot = (el: any) => this.root = el;
 
-  getSelectedNode() {
-    const editorState = this.state.history.first();
-    return editorState.get('root').getIn(editorState.get('selected'));
+  getCurrentEditorState() {
+    return ((this.state.history.first(): any): EditorState);
   }
 
-  getClosestCollectionPath(root: ASTNode, selected: ASTPath) {
+  getSelectedNode() {
+    const {root, selected} = this.getCurrentEditorState();
+    return root.getIn(selected);
+  }
+
+  getClosestCollectionPath(root: any/*ASTNode*/, selected: ASTPath) {
     const selectedNode = root.getIn(selected);
 
     if (selectedNode) {
@@ -180,20 +185,18 @@ export default class Editor extends PureComponent {
     }
   }
 
-  addToHistory(updateFn: (root: ASTNode, selected: ASTPath) => any) {
+  addToHistory(updateFn: (root: any/*ASTNode*/, selected: ASTPath) => any) {
     this.setState(({history}) => {
-      const editorState = history.first();
-      const root = editorState.get('root');
-      let selected = editorState.get('selected');
+      let {root, selected} = history.first() || {};
       if (selected.last() !== 'end' && !root.getIn(selected)) {
-        selected = new List();
+        selected = List();
       }
       const newState = {root, selected, ...updateFn(root, selected)};
       return Immutable.is(selected, newState.selected) && Immutable.is(root, newState.root)
         ? undefined
         : {
-          future: new List(),
-          history: history.unshift(new Map(newState)).slice(0, MAX_HISTORY_LENGTH)
+          future: List(),
+          history: history.unshift(newState).slice(0, MAX_HISTORY_LENGTH)
         };
     });
   }
@@ -255,7 +258,7 @@ export default class Editor extends PureComponent {
       return {
         root: isRootDelete ? NullNode : newRoot,
         selected: isRootDelete || selected.last() === 'end'
-          ? new List()
+          ? List()
           : navigate('DOWN', newRoot, navigate('UP', root, selected))
       };
     });
@@ -288,7 +291,7 @@ export default class Editor extends PureComponent {
 
   undo() {
     this.setState(({future, history}) => ({
-      future: future.unshift(history.first()),
+      future: future.unshift(((history.first(): any): EditorState)),
       history: history.size > 1 ? history.shift() : history
     }));
   }
@@ -296,7 +299,7 @@ export default class Editor extends PureComponent {
   redo() {
     this.setState(({future, history}) => ({
       future: future.shift(),
-      history: future.isEmpty() ? history : history.unshift(future.first())
+      history: future.isEmpty() ? history : history.unshift(((future.first(): any): EditorState))
     }));
   }
 
@@ -305,13 +308,12 @@ export default class Editor extends PureComponent {
       return;
     }
 
-    const editorState = this.state.history.first();
-    let selected = editorState.get('selected');
+    let {root, selected} = this.getCurrentEditorState();
     if (selected.last() === 'end') {
       selected = selected.slice(0, -2);
     }
     event.clipboardData.setData('text/plain',
-      generate(editorState.get('root').getIn(selected).toJS()).code
+      generate(root.getIn(selected).toJS()).code
     );
     event.preventDefault();
   };
@@ -375,7 +377,7 @@ export default class Editor extends PureComponent {
       return this.replace(NumericNode);
     }
     if (
-      this.state.history.first().get('selected').last() !== 'key' && (
+      this.getCurrentEditorState().selected.last() !== 'key' && (
         selectedIsNull || altKey || isBooleanLiteral(this.getSelectedNode())
       )
     ) {
@@ -447,9 +449,8 @@ export default class Editor extends PureComponent {
   handleSelect = (selected: ASTPath) => this.changeSelected(() => ({selected}));
 
   render() {
-    const {history, showKeymap} = this.state;
-    const editorState = history.first();
-    const selected = editorState.get('selected');
+    const {showKeymap} = this.state;
+    const {root, selected} = this.getCurrentEditorState();
     const isInArray = (selected.last() === 'end' ? selected.slice(0, -2) : selected)
         .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
@@ -458,7 +459,7 @@ export default class Editor extends PureComponent {
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
           <TypeElement
             lastDirection={this.lastDirection}
-            node={editorState.get('root')}
+            node={root}
             selected={selected}
             onSelect={this.handleSelect}
             ref={this.bindRoot}

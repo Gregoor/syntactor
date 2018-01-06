@@ -63,14 +63,12 @@ function setCaretPosition(el: any, caretPos) {
   }
 }
 
-class Editable extends PureComponent {
-
-  props: {
-    children?: any,
+class Editable extends PureComponent<{
+  children?: any,
     focused?: boolean,
     lastDirection?: Direction,
     style?: any
-  };
+}> {
 
   input: any;
 
@@ -162,11 +160,9 @@ export class NullLiteral extends TypeElement {
 
 }
 
-export class StringLiteral extends PureComponent {
-
-  props: ASTNodeProps & {
-    style?: any
-  };
+export class StringLiteral extends PureComponent<ASTNodeProps & {
+  style?: any
+}> {
 
   static defaultProps = {
     path: new List()

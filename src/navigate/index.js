@@ -5,7 +5,7 @@ import type {ASTNode, ASTPath, Direction, HorizontalDirection, VerticalDirection
 import findVerticalNeighborPath from './find-vertical-neighbor-path';
 import findVerticalPathIn from './find-vertical-path-in';
 
-function traverseVertically(direction: VerticalDirection, ast: ASTNode, path: ASTPath) {
+function traverseVertically(direction: VerticalDirection, ast: any/*ASTNode*/, path: ASTPath) {
   const isUp = direction === 'UP';
   if (!isUp && path.last() === 'end' && path.size === 2) return path;
 
@@ -20,7 +20,7 @@ function traverseVertically(direction: VerticalDirection, ast: ASTNode, path: AS
   return neighborPath.concat(findVerticalPathIn(direction, ast.getIn(neighborPath)));
 }
 
-function traverseHorizontally(direction: HorizontalDirection, ast: ASTNode, path: ASTPath) {
+function traverseHorizontally(direction: HorizontalDirection, ast: any/*ASTNode*/, path: ASTPath) {
   const isLeft = direction === 'LEFT';
 
   const parentPath = path.slice(0, -1);
