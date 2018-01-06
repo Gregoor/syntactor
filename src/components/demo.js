@@ -50,7 +50,7 @@ export default class Demo extends PureComponent<{}> {
       <div style={{maxWidth: 950, margin: '0 auto'}}>
         <Head><Brace charCode={123}/>Syntactor<Brace charCode={125}/></Head>
 
-        <Card style={{marginBottom: 10}}>
+        <Card style={{marginBottom: 10, minHeight: '83vh'}}>
           <Nav>
             <Symbol>[</Symbol>
             {links.map(([label, link], i) => (
