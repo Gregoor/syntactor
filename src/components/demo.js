@@ -7,7 +7,7 @@ import styles from '../utils/styles';
 import Editor from './editor';
 
 const links = [
-  ['Usage', 'https://github.com/Gregoor/syntactor#usage'],
+  ['Installation', 'https://github.com/Gregoor/syntactor#usage'],
   ['Reasoning', 'https://medium.com/@grgtwt/code-is-not-just-text-1082981ae27f'],
   ['Roadmap', 'https://github.com/Gregoor/syntactor/milestones?with_issues=no'],
   ['GitHub', 'https://github.com/gregoor/syntactor'],
