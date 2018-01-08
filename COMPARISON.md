@@ -1,6 +1,6 @@
 # Comparison
 Each scenario consists of a JSON object before and after editing. The "**|**"-symbol signifies the cursor position from which to start editing.\
-The "keys"-Section may contain TEXT which is dependent on the input and equal across editors. Hence it is not counted in the total key score. US keyboard layout is used as a baseline since that's what I and most programmers I know use. I realize Dvorak might shave off a few keypress here and there. 
+The "keys"-Section may contain TEXT which is dependent on the input and equal across editors. Hence it is not counted in the total key score. US keyboard layout is used as a baseline since that's what I and most programmers I know use. Dvorak might shave off a few keypress here and there. 
 
 ## Insert property
 ```json
