@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import type {Direction, ASTNodeProps} from '../types';
 import styles from '../utils/styles';
 import Highlightable from './highlightable';
-import TypeElement from './type-element';
+import ASTNode from './ast-node';
 
 const Input = styled.input`
   width: ${(props) => props.size ? 'auto' : '1px'};
@@ -18,7 +18,7 @@ const Input = styled.input`
   ${styles.text}
 `;
 
-class Literal extends TypeElement {
+class Literal extends ASTNode {
 
   componentDidMount() {
     const el = ReactDOM.findDOMNode(this.container);
@@ -104,7 +104,7 @@ class Editable extends PureComponent<{
 
 }
 
-export class BooleanLiteral extends TypeElement {
+export class BooleanLiteral extends ASTNode {
 
   getSelectedInput() {
     return null;
@@ -120,7 +120,7 @@ export class BooleanLiteral extends TypeElement {
 
 }
 
-export class NumericLiteral extends TypeElement {
+export class NumericLiteral extends ASTNode {
 
   editable: any;
 
@@ -148,7 +148,7 @@ export class NumericLiteral extends TypeElement {
 
 }
 
-export class NullLiteral extends TypeElement {
+export class NullLiteral extends ASTNode {
 
   getSelectedInput() {
     return null;

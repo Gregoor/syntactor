@@ -26,13 +26,13 @@ import {
 } from 'babel-types'
 
 import type {ASTNode, ASTPath, Direction, VerticalDirection} from '../types';
-import {ArrayExpression, ObjectExpression} from './collections';
+import * as collections from './collections';
 import Keymap from './keymap';
-import {BooleanLiteral, NumericLiteral, NullLiteral, StringLiteral} from './literals';
+import * as literals from './literals';
 import navigate from '../navigate/index';
 import parse from '../utils/parse';
 import styles from '../utils/styles';
-import TypeElement, {injectTypeElements} from './type-element';
+import RootASTNode, {injectASTNodeComponents} from './ast-node';
 
 const {List} = Immutable;
 
@@ -46,14 +46,7 @@ function isEditable(node?: ASTNode) {
   return node && (isStringLiteral(node.toJS()) || isNumericLiteral(node.toJS()));
 }
 
-injectTypeElements({
-  BooleanLiteral,
-  NumericLiteral,
-  NullLiteral,
-  StringLiteral,
-  ArrayExpression,
-  ObjectExpression
-});
+injectASTNodeComponents({...literals, ...collections});
 
 const Container = styled.div`
   position: relative;
@@ -498,7 +491,7 @@ export default class Editor extends PureComponent<Props, {
       <Container tabIndex="0" ref={(el) => this.retainFocus(el)} onKeyDown={this.handleKeyDown}>
         <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
-          <TypeElement
+          <RootASTNode
             lastDirection={this.lastDirection}
             node={root}
             selected={selected}

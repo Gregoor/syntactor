@@ -3,13 +3,13 @@ import Immutable, {List} from 'immutable';
 
 import {ASTNodeProps} from '../types';
 
-let TypeElements = {};
+let ASTNodes = {};
 
-export function injectTypeElements(value) {
-  TypeElements = value;
+export function injectASTNodeComponents(value) {
+  ASTNodes = value;
 }
 
-export default class TypeElement extends React.Component {
+export default class ASTNode extends React.Component {
 
   props: ASTNodeProps;
 
@@ -34,11 +34,11 @@ export default class TypeElement extends React.Component {
 
   render() {
     const {node, level} = this.props;
-    const TypeElement = TypeElements[node.get('type')];
-    if (!TypeElement) {
+    const ASTNodeImpl = ASTNodes[node.get('type')];
+    if (!ASTNodeImpl) {
       return console.warn('Unknown type', node.get('type'));
     }
-    return <TypeElement {...this.props} level={level + 1} ref={this.bindElement}/>;
+    return <ASTNodeImpl {...this.props} level={level + 1} ref={this.bindElement}/>;
   }
 
 }

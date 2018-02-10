@@ -5,7 +5,7 @@ import {is, List} from 'immutable';
 
 import type {ASTNodeProps} from '../types';
 import Highlightable from './highlightable';
-import TypeElement from './type-element';
+import ASTNode from './ast-node';
 
 const IndentContainer = styled.span`
   border-left: 1px solid rgba(0, 0, 0, .1);
@@ -75,7 +75,7 @@ class CollectionExpression extends PureComponent<ASTNodeProps & {
 
 }
 
-export class ArrayExpression extends TypeElement {
+export class ArrayExpression extends ASTNode {
 
   selected: any;
 
@@ -92,7 +92,7 @@ export class ArrayExpression extends TypeElement {
           const isSelected = selected && is(selected.slice(0, 2), List.of('elements', i));
           return (
             <span key={i}>
-              <TypeElement
+              <ASTNode
                 {...{level, node, onSelect}}
                 lastDirection={isSelected ? lastDirection : null}
                 path={path.push(i)}
@@ -108,7 +108,7 @@ export class ArrayExpression extends TypeElement {
 
 }
 
-export class ObjectExpression extends TypeElement {
+export class ObjectExpression extends ASTNode {
 
   selected: any;
 
@@ -128,7 +128,7 @@ export class ObjectExpression extends TypeElement {
           const propertyPath = path.push(i);
           return (
             <span key={i}>
-              <TypeElement
+              <ASTNode
                 {...{level, onSelect}}
                 lastDirection={isKeySelected ? lastDirection : null}
                 node={node.get('key')}
@@ -138,7 +138,7 @@ export class ObjectExpression extends TypeElement {
                 style={keyStyle}
               />
               <Symbol>:</Symbol>{' '}
-              <TypeElement
+              <ASTNode
                 {...{level, onSelect}}
                 lastDirection={isValueSelected ? lastDirection : null}
                 node={node.get('value')}
