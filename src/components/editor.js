@@ -224,8 +224,9 @@ export default class Editor extends PureComponent<Props, {
     return this.addToHistory((root, selected) => {
       const {direction, selected: newSelected} = changeFn(root, selected);
       this.lastDirection = direction;
+      const selectedNode = root.getIn(selected);
       return {
-        root: isNumericLiteral(root.getIn(selected).toJS())
+        root: selectedNode && isNumericLiteral(selectedNode.toJS())
           ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
           : root,
         selected: newSelected
