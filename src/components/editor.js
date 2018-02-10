@@ -197,7 +197,7 @@ export default class Editor extends PureComponent<Props, {
       ? collectionPath.size
       : selected.get(collectionPath.size) + 1 || 0;
 
-    const isArray = isArrayExpression(root.getIn(collectionPath.slice(0, -1)));
+    const isArray = isArrayExpression(root.getIn(collectionPath.slice(0, -1)).toJS());
 
     const newRoot = root.updateIn(collectionPath, (list) => list.insert(
       itemIndex,
