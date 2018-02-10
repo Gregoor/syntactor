@@ -10,20 +10,24 @@
     "url": "https://github.com/Gregoor/syntactor.git"
   },
   "dependencies": {
-    "babel-generator": "^6.26.0",
+    "babel-generator": "^6.26.1",
+    "babel-types": "^6.26.0",
     "babylon": "^6.18.0",
     "immutable": "4.0.0-rc.9",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "styled-components": "^2.4.0"
+    "styled-components": "^3.1.6"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-react-app": "^3.1.0",
-    "flow-bin": "^0.62.0",
+    "babel-preset-react-app": "^3.1.1",
+    "flow-bin": "^0.65.0",
     "gh-pages": "1.1.0",
-    "jest-immutable-matchers": "^1.4.0",
-    "react-scripts": "^1.0.17"
+    "jest-immutable-matchers": "^2.0.1",
+    "react-scripts": "^1.1.1"
+  },
+  "resolutions": {
+    "jest": "22.2.2"
   },
   "scripts": {
     "start": "react-scripts start",

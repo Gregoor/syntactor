@@ -1,5 +1,4 @@
 // @flow
-import React, {PureComponent} from 'react';
 import {
   isBooleanLiteral,
   isNullLiteral,
@@ -7,7 +6,8 @@ import {
   isStringLiteral,
   isArrayExpression,
   isObjectExpression
-} from '../utils/checks';
+} from 'babel-types'
+import React, {PureComponent} from 'react';
 
 const {Fragment} = (React: any);
 
@@ -61,8 +61,8 @@ export default class Keymap extends PureComponent<any> {
     const {isInArray, selected, selectedNode} = this.props;
     const itemType = isInArray ? 'element' : 'property';
     const isKeySelected = selected.last() === 'key';
-    const selectedIsNullLiteral = !isKeySelected && isNullLiteral(selectedNode);
-    const selectedIsNumericLiteral = selectedNode && isNumericLiteral(selectedNode);
+    const selectedIsNullLiteral = !isKeySelected && isNullLiteral(selectedNode.toJS());
+    const selectedIsNumericLiteral = selectedNode && isNumericLiteral(selectedNode.toJS());
     return (
       <div>
         <KeySection title="Modify">
@@ -78,7 +78,7 @@ export default class Keymap extends PureComponent<any> {
           <KeyInfo keys={['Alt + ⬇']}>
             Move {itemType} down
           </KeyInfo>
-          {selectedNode && isBooleanLiteral(selectedNode) && (
+          {selectedNode && isBooleanLiteral(selectedNode.toJS()) && (
             <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
           )}
           {selectedIsNumericLiteral && (
@@ -100,8 +100,10 @@ export default class Keymap extends PureComponent<any> {
               [isObjectExpression, ['o', String.fromCharCode(123)], 'Object'],
               [isNullLiteral, ['.'], 'Null']
             ].map(([checkFn, keys, label]) => (
-              !checkFn(selectedNode) && (
-                <KeyInfo key={label} keys={selectedIsNullLiteral ? keys : ['Alt + ' + keys[0]]}>
+              !checkFn(selectedNode.toJS()) && (
+                <KeyInfo
+                  key={label}
+                  keys={selectedIsNullLiteral || isBooleanLiteral(selectedNode.toJS()) ? keys : ['Alt + ' + keys[0]]}>
                   {label}
                 </KeyInfo>
               )

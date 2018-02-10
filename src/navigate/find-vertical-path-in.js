@@ -1,7 +1,7 @@
 // @flow
+import {isLiteral} from 'babel-types';
 import {List} from 'immutable';
 
-import {isLiteral} from '../utils/checks';
 import type {ASTNode, ASTKey, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
@@ -25,7 +25,7 @@ function findChildKey(node: ASTNode, keys: List<string>): [?ASTKey, ?ASTNode] {
 }
 
 export default function findVerticalPathIn(direction: VerticalDirection, node?: any/*ASTNode*/) {
-  if (!node || isLiteral(node)) return new List();
+  if (!node || isLiteral(node.toJS())) return new List();
 
   const isUp = direction === 'UP';
 

@@ -10,60 +10,56 @@ const expectPath = (obj, direction, pathIn, pathOut) => {
     .toEqualImmutable(new List(pathOut));
 };
 
-describe('findVerticalPathIn', () => {
+beforeEach(() => {
+  jest.addMatchers(matchers);
+});
 
-  beforeEach(() => {
-    jest.addMatchers(matchers);
-  });
+test('goes into prop key', () => {
+  expectPath({prop: 'value'}, 'UP', ['properties', 0], ['key']);
+});
 
-  it('goes into prop key', () => {
-    expectPath({prop: 'value'}, 'UP', ['properties', 0], ['key']);
-  });
+test('goes into array first element', () => {
+  expectPath({
+    arr: [
+      'elem'
+    ]
+  }, 'DOWN', ['properties', 0, 'value'], ['elements', 0]);
+});
 
-  it('goes into array first element', () => {
-    expectPath({
-      arr: [
-        'elem'
-      ]
-    }, 'DOWN', ['properties', 0, 'value'], ['elements', 0]);
-  });
+test('goes into array end', () => {
+  expectPath({
+    arr: [
+      'uno',
+      'duos'
+    ]
+  }, 'UP', ['properties', 0], ['value', 'elements', 'end']);
+});
 
-  it('goes into array end', () => {
-    expectPath({
-      arr: [
-        'uno',
-        'duos'
-      ]
-    }, 'UP', ['properties', 0], ['value', 'elements', 'end']);
-  });
+test('goes into object first prop', () => {
+  expectPath({
+    obj: {
+      muchkey: 'wow'
+    }
+  }, 'DOWN', ['properties', 0, 'value'], ['properties', 0, 'key']);
+});
 
-  it('goes into object first prop', () => {
-    expectPath({
-      obj: {
-        muchkey: 'wow'
-      }
-    }, 'DOWN', ['properties', 0, 'value'], ['properties', 0, 'key']);
-  });
+test('goes into object end', () => {
+  expectPath({
+    obj: {
+      key1: 'here',
+      key2: true
+    }
+  }, 'UP', ['properties', 0, 'value'], ['properties', 'end']);
+});
 
-  it('goes into object end', () => {
-    expectPath({
-      obj: {
-        key1: 'here',
-        key2: true
-      }
-    }, 'UP', ['properties', 0, 'value'], ['properties', 'end']);
-  });
+test('goes not into primitive value', () => {
+  expectPath({
+    primitive: true
+  }, 'UP', ['properties', 0, 'key'], []);
+});
 
-  it('goes not into primitive value', () => {
-    expectPath({
-      primitive: true
-    }, 'UP', ['properties', 0, 'key'], []);
-  });
-
-  it('goes to key when value empty array', () => {
-    expectPath({
-      empty: []
-    }, 'UP', ['properties', 0], ['key'])
-  });
-
+test('goes to key when value empty array', () => {
+  expectPath({
+    empty: []
+  }, 'UP', ['properties', 0], ['key'])
 });
