@@ -1,6 +1,6 @@
 // @flow
+import {isObjectProperty} from 'babel-types';
 import {List} from 'immutable';
-
 import type {ASTPath, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
@@ -53,7 +53,7 @@ export default function findVerticalNeighborPath(
       return path;
     }
 
-    if (parentNode && parentNode.get('type') === 'ObjectProperty') {
+    if (parentNode && isObjectProperty(parentNode.toJS())) {
       const newKey = isUp ? 'key' : 'value';
       const newPath = parentPath.push(newKey);
       return newKey === lastKey
