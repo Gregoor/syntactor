@@ -21,13 +21,13 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-react-app": "^3.1.1",
-    "flow-bin": "^0.65.0",
+    "flow-bin": "^0.66.0",
     "gh-pages": "1.1.0",
     "jest-immutable-matchers": "^2.0.1",
     "react-scripts": "^1.1.1"
   },
   "resolutions": {
-    "jest": "22.2.2"
+    "jest": "22.3.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -2,7 +2,6 @@
 import React, {PureComponent} from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import * as Immutable from 'immutable';
 import generate from 'babel-generator';
 import {
   booleanLiteral,
@@ -24,7 +23,7 @@ import {
   isObjectExpression,
   isObjectProperty
 } from 'babel-types'
-
+import * as Immutable from '../utils/proxy-immutable';
 import type {ASTNode, ASTPath, Direction, VerticalDirection} from '../types';
 import * as collections from './collections';
 import Keymap from './keymap';
@@ -43,7 +42,7 @@ function between(number, lower, upper) {
 }
 
 function isEditable(node?: ASTNode) {
-  return node && (isStringLiteral(node.toJS()) || isNumericLiteral(node.toJS()));
+  return isStringLiteral(node) || isNumericLiteral(node);
 }
 
 injectASTNodeComponents({...literals, ...collections});
@@ -74,7 +73,7 @@ declare type Props = {
 };
 
 declare type EditorState = {
-  +root: any, // should be ASTNode, but Flow bugs. Check again in later versions (also for all "any/*ASTNode*/")
+  +root: ASTNode,
   +selected: ASTPath
 };
 
@@ -142,7 +141,7 @@ export default class Editor extends PureComponent<Props, {
   bindRoot = (el: any) => this.root = el;
 
   getCurrentEditorState() {
-    return ((this.state.history.first(): any): EditorState);
+    return this.state.history.first();
   }
 
   getSelectedNode() {
@@ -153,12 +152,10 @@ export default class Editor extends PureComponent<Props, {
   getClosestCollectionPath(root: any/*ASTNode*/, selected: ASTPath) {
     const selectedNode = root.getIn(selected);
 
-    if (selectedNode) {
-      if (isObjectExpression(selectedNode.toJS())) {
-        return selected.push('properties');
-      } else if (isArrayExpression(selectedNode.toJS())) {
-        return selected.push('elements');
-      }
+    if (isObjectExpression(selectedNode)) {
+      return selected.push('properties');
+    } else if (isArrayExpression(selectedNode)) {
+      return selected.push('elements');
     }
 
     const index = selected.findLastIndex((key) => ['elements', 'properties'].includes(key));
@@ -197,7 +194,7 @@ export default class Editor extends PureComponent<Props, {
       ? collectionPath.size
       : selected.get(collectionPath.size) + 1 || 0;
 
-    const isArray = isArrayExpression(root.getIn(collectionPath.slice(0, -1)).toJS());
+    const isArray = isArrayExpression(root.getIn(collectionPath.butLast()));
 
     const newRoot = root.updateIn(collectionPath, (list) => list.insert(
       itemIndex,
@@ -213,7 +210,7 @@ export default class Editor extends PureComponent<Props, {
     };
   });
 
-  replace(node: any, subSelected: ASTPath = List.of()) {
+  replace(node: ASTNode, subSelected: ASTPath = List.of()) {
     this.addToHistory((root, selected) => ({
       root: root.updateIn(selected, () => Immutable.fromJS(node)),
       selected: selected.concat(subSelected)
@@ -226,7 +223,7 @@ export default class Editor extends PureComponent<Props, {
       this.lastDirection = direction;
       const selectedNode = root.getIn(selected);
       return {
-        root: selectedNode && isNumericLiteral(selectedNode.toJS())
+        root: selectedNode && isNumericLiteral(selectedNode)
           ? root.updateIn(selected.push('value'), (value) => parseFloat(value))
           : root,
         selected: newSelected
@@ -259,7 +256,7 @@ export default class Editor extends PureComponent<Props, {
       : selected.get(collectionPath.size) || 0;
     const itemPath = collectionPath.push(itemIndex);
     const item = root.getIn(itemPath);
-    const isItemObjectProperty = isObjectProperty(item.toJS());
+    const isItemObjectProperty = isObjectProperty(item);
 
     const newItemIndex = parseInt(itemIndex, 10) + (isMoveUp ? -1 : 1);
     const newItemPath = collectionPath.push(newItemIndex);
@@ -267,8 +264,8 @@ export default class Editor extends PureComponent<Props, {
 
     if (
       isItemObjectProperty &&
-      isObjectProperty(targetItem.toJS()) &&
-      isObjectExpression(targetItem.get('value').toJS())
+      isObjectProperty(targetItem) &&
+      isObjectExpression(targetItem.value)
     ) {
       const targetObjectPath = newItemPath.push('value', 'properties');
       const targetIndex = isMoveUp ? root.getIn(targetObjectPath).size : 0;
@@ -286,7 +283,7 @@ export default class Editor extends PureComponent<Props, {
       const collectionIndexPath = newItemPath.slice(0, -3);
       const parentCollectionPath = this.getClosestCollectionPath(root, collectionIndexPath);
 
-      if (!isItemObjectProperty || !isObjectExpression(root.getIn(parentCollectionPath.butLast()).toJS())) {
+      if (!isItemObjectProperty || !isObjectExpression(root.getIn(parentCollectionPath.butLast()))) {
         return;
       }
 
@@ -313,7 +310,7 @@ export default class Editor extends PureComponent<Props, {
 
   undo() {
     this.setState(({future, history}) => ({
-      future: future.unshift(((history.first(): any): EditorState)),
+      future: future.unshift(history.first()),
       history: history.size > 1 ? history.shift() : history
     }));
   }
@@ -321,7 +318,7 @@ export default class Editor extends PureComponent<Props, {
   redo() {
     this.setState(({future, history}) => ({
       future: future.shift(),
-      history: future.isEmpty() ? history : history.unshift(((future.first(): any): EditorState))
+      history: future.isEmpty() ? history : history.unshift(future.first())
     }));
   }
 
@@ -335,7 +332,7 @@ export default class Editor extends PureComponent<Props, {
       selected = selected.slice(0, -2);
     }
     event.clipboardData.setData('text/plain',
-      generate(root.getIn(selected).toJS()).code
+      generate(root.getIn(selected)).code
     );
     event.preventDefault();
   };
@@ -395,7 +392,7 @@ export default class Editor extends PureComponent<Props, {
     }
 
     const increment = INCREMENTS[key];
-    if (isNumericLiteral(this.getSelectedNode().toJS()) && increment !== undefined) {
+    if (isNumericLiteral(this.getSelectedNode()) && increment !== undefined) {
       event.preventDefault();
       return this.updateValue((value) => parseFloat(value) + increment);
     }
@@ -406,7 +403,7 @@ export default class Editor extends PureComponent<Props, {
       return this.deleteSelected();
     }
 
-    const selectedIsNull = isNullLiteral(this.getSelectedNode().toJS());
+    const selectedIsNull = isNullLiteral(this.getSelectedNode());
 
     const enteredNumber = parseInt(key, 10);
     if (selectedIsNull && !isNaN(enteredNumber)) {
@@ -415,7 +412,7 @@ export default class Editor extends PureComponent<Props, {
     }
     if (
       this.getCurrentEditorState().selected.last() !== 'key' && (
-        selectedIsNull || altKey || isBooleanLiteral(this.getSelectedNode().toJS())
+        selectedIsNull || altKey || isBooleanLiteral(this.getSelectedNode())
       )
     ) {
       switch (key) {
@@ -424,12 +421,12 @@ export default class Editor extends PureComponent<Props, {
         case '\'':
           event.preventDefault();
           return this.replace(
-            stringLiteral((this.getSelectedNode().get('value') || '').toString())
+            stringLiteral((this.getSelectedNode().value || '').toString())
           );
 
         case 'n':
           event.preventDefault();
-          const value = this.getSelectedNode().get('value');
+          const value = this.getSelectedNode().value;
           return this.replace(numericLiteral(Number(value) || parseFloat(value) || 0));
 
         case 't':
@@ -440,7 +437,7 @@ export default class Editor extends PureComponent<Props, {
         case 'a':
         case '[':
           event.preventDefault();
-          return this.replace(arrayExpression([this.getSelectedNode().toJS()]));
+          return this.replace(arrayExpression([this.getSelectedNode()]));
 
         case 'o':
         case '{':

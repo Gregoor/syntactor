@@ -1,9 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import {List} from 'immutable';
 import * as matchers from 'jest-immutable-matchers';
-
 import parse from '../../utils/parse';
+import {List} from '../../utils/proxy-immutable';
 import navigate from '../../navigate';
 
 beforeEach(() => {

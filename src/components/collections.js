@@ -1,8 +1,7 @@
 // @flow
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
-import {is, List} from 'immutable';
-
+import {is, List} from '../utils/proxy-immutable';
 import type {ASTNodeProps} from '../types';
 import Highlightable from './highlightable';
 import ASTNode from './ast-node';
@@ -88,7 +87,7 @@ export class ArrayExpression extends ASTNode {
     const path = this.props.path.push('elements');
     return (
       <CollectionExpression openString="[" closeString="]" {...this.props} path={path}>
-      {node.get('elements').map((node, i) => {
+      {node.elements.map((node, i) => {
           const isSelected = selected && is(selected.slice(0, 2), List.of('elements', i));
           return (
             <span key={i}>
@@ -122,7 +121,7 @@ export class ObjectExpression extends ASTNode {
     const path = this.props.path.push('properties');
     return (
       <CollectionExpression openString="{" closeString="}" {...this.props} path={path}>
-        {node.get('properties').map((node, i) => {
+        {node.properties.map((node, i) => {
           const isKeySelected = selected && is(List.of('properties', i, 'key'), selected);
           const isValueSelected = selected && is(selected.slice(0, 3), List.of('properties', i, 'value'));
           const propertyPath = path.push(i);
@@ -131,7 +130,7 @@ export class ObjectExpression extends ASTNode {
               <ASTNode
                 {...{level, onSelect}}
                 lastDirection={isKeySelected ? lastDirection : null}
-                node={node.get('key')}
+                node={node.key}
                 path={propertyPath.push('key')}
                 ref={(el) => isKeySelected && (this.selected = el)}
                 selected={isKeySelected}
@@ -141,7 +140,7 @@ export class ObjectExpression extends ASTNode {
               <ASTNode
                 {...{level, onSelect}}
                 lastDirection={isValueSelected ? lastDirection : null}
-                node={node.get('value')}
+                node={node.value}
                 path={propertyPath.push('value')}
                 ref={(el) => isValueSelected && (this.selected = el)}
                 selected={selected && isValueSelected ? selected.slice(3) : null}

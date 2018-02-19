@@ -61,9 +61,9 @@ export default class Keymap extends PureComponent<any> {
     const {isInArray, selected, selectedNode} = this.props;
     const itemType = isInArray ? 'element' : 'property';
     const isKeySelected = selected.last() === 'key';
-    const selectedIsNullLiteral = !isKeySelected && selectedNode && isNullLiteral(selectedNode.toJS());
-    const selectedIsNumericLiteral = selectedNode && isNumericLiteral(selectedNode.toJS());
-    const selectedIsBooleanLiteral = selectedNode && isBooleanLiteral(selectedNode.toJS());
+    const selectedIsNullLiteral = !isKeySelected && isNullLiteral(selectedNode);
+    const selectedIsNumericLiteral = isNumericLiteral(selectedNode);
+    const selectedIsBooleanLiteral = isBooleanLiteral(selectedNode);
     return (
       <div>
         <KeySection title="Modify">
@@ -79,7 +79,7 @@ export default class Keymap extends PureComponent<any> {
           <KeyInfo keys={['Alt + ⬇']}>
             Move {itemType} down
           </KeyInfo>
-          {selectedNode && isBooleanLiteral(selectedNode.toJS()) && (
+          {isBooleanLiteral(selectedNode) && (
             <KeyInfo keys={['t', 'f']}>Set to true/false</KeyInfo>
           )}
           {selectedIsNumericLiteral && (
@@ -101,7 +101,7 @@ export default class Keymap extends PureComponent<any> {
               [isObjectExpression, ['o', String.fromCharCode(123)], 'Object'],
               [isNullLiteral, ['.'], 'Null']
             ].map(([checkFn, keys, label]) => (
-              (!selectedNode || !checkFn(selectedNode.toJS())) && (
+              (!!checkFn(selectedNode)) && (
                 <KeyInfo
                   key={label}
                   keys={selectedIsNullLiteral || selectedIsBooleanLiteral ? keys : ['Alt + ' + keys[0]]}>

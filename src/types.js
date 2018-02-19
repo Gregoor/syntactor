@@ -1,5 +1,5 @@
 // @flow
-import {List, Map} from 'immutable';
+import {List, Map} from './utils/proxy-immutable';
 
 export type ASTKey = string | number;
 export type ASTNode = Map<string, ASTNode | List<ASTNode> | string | boolean | number>;

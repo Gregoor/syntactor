@@ -1,34 +1,34 @@
 // @flow
 import {isLiteral, isObjectExpression, isObjectProperty} from 'babel-types';
-import {List} from 'immutable';
+import {List} from '../utils/proxy-immutable';
 import nodeTypes from '../ast';
 import type {ASTNode, ASTKey, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
-function findChildKey(node: ASTNode, keys: string[]): [?ASTKey, ?ASTNode] {
-  const childKey = keys[0];
+function findChildKey(node: ASTNode, keys: List<string>): [?ASTKey, ?ASTNode] {
+  const childKey = keys.first();
 
   const childNode = node.get(childKey);
   keys = keys.slice(keys.indexOf(childKey) + 1);
 
   if (childNode) return [childKey, ((childNode: any): ASTNode)];
-  else if (keys.length === 0 || !childKey) return [null, null];
+  else if (keys.isEmpty() || !childKey) return [null, null];
   else return findChildKey(node, keys);
 }
 
 export default function findVerticalPathIn(direction: VerticalDirection, node?: any/*ASTNode*/) {
-  if (!node || isLiteral(node.toJS())) return new List();
+  if (!node || isLiteral(node)) return new List();
 
   const isUp = direction === 'UP';
 
-  if (isObjectProperty(node.toJS()) && !(isUp && isNonEmptyCollection(node.get('value')))) {
+  if (isObjectProperty(node) && !(isUp && isNonEmptyCollection(node.value))) {
     return List.of('key');
   }
 
-  const verticalKeys = nodeTypes[node.get('type')].visitor || [];
-  const [childKey, childNode] = findChildKey(node, isUp ? verticalKeys.slice().reverse() : verticalKeys);
+  const verticalKeys = new List(nodeTypes[node.type].visitor || []);
+  const [childKey, childNode] = findChildKey(node, isUp ? verticalKeys.reverse() : verticalKeys);
 
-  if (!childKey || (!isUp && (!childKey || !childNode || isObjectExpression(childNode.toJS())))) {
+  if (!childKey || (!isUp && (!childKey || isObjectExpression(childNode)))) {
     return new List();
   }
 

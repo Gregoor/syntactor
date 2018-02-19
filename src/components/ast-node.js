@@ -1,6 +1,5 @@
 import React from 'react';
-import Immutable, {List} from 'immutable';
-
+import Immutable, {List} from '../utils/proxy-immutable';
 import {ASTNodeProps} from '../types';
 
 let ASTNodes = {};
@@ -34,9 +33,9 @@ export default class ASTNode extends React.Component {
 
   render() {
     const {node, level} = this.props;
-    const ASTNodeImpl = ASTNodes[node.get('type')];
+    const ASTNodeImpl = ASTNodes[node.type];
     if (!ASTNodeImpl) {
-      return console.warn('Unknown type', node.get('type'));
+      return console.warn('Unknown type', node.type);
     }
     return <ASTNodeImpl {...this.props} level={level + 1} ref={this.bindElement}/>;
   }

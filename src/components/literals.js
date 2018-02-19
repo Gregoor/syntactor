@@ -1,11 +1,10 @@
 // @flow
 import React, {PureComponent} from 'react';
 import ReactDOM from 'react-dom';
-import {List} from 'immutable';
 import styled from 'styled-components';
-
-import type {Direction, ASTNodeProps} from '../types';
+import {List} from '../utils/proxy-immutable';
 import styles from '../utils/styles';
+import type {Direction, ASTNodeProps} from '../types';
 import Highlightable from './highlightable';
 import ASTNode from './ast-node';
 
@@ -113,7 +112,7 @@ export class BooleanLiteral extends ASTNode {
   render() {
     return (
       <Literal tabIndex="0" {...this.props}>
-        <b>{this.props.node.get('value').toString()}</b>
+        <b>{this.props.node.value.toString()}</b>
       </Literal>
     );
   }
@@ -140,7 +139,7 @@ export class NumericLiteral extends ASTNode {
           lastDirection={lastDirection}
           style={{color: '#268bd2'}}
         >
-          {node.get('value')}
+          {node.value}
         </Editable>
       </Literal>
     );
@@ -188,7 +187,7 @@ export class StringLiteral extends PureComponent<ASTNodeProps & {
           focused={!!selected}
           style={mergedStyle}
         >
-          {node.get('value')}
+          {node.value}
         </Editable>
         "
       </Literal>

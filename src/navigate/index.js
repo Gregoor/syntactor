@@ -1,6 +1,6 @@
 // @flow
-import {is} from 'immutable';
-
+import {isObjectProperty} from 'babel-types';
+import {is} from '../utils/proxy-immutable';
 import type {ASTNode, ASTPath, Direction, HorizontalDirection, VerticalDirection} from '../types';
 import findVerticalNeighborPath from './find-vertical-neighbor-path';
 import findVerticalPathIn from './find-vertical-path-in';
@@ -26,13 +26,13 @@ function traverseHorizontally(direction: HorizontalDirection, ast: any/*ASTNode*
   const parentPath = path.slice(0, -1);
   const newKey = isLeft ? 'key' : 'value';
   const parentNode = ast.getIn(parentPath);
-  if (parentNode && parentNode.get('type') === 'ObjectProperty' && newKey !== path.last()) {
+  if (isObjectProperty(parentNode) && newKey !== path.last()) {
     return parentPath.push(newKey);
   }
 
   const newPath = traverseVertically(isLeft ? 'UP' : 'DOWN', ast, path);
   const newParentNode = ast.getIn(newPath.slice(0, -1));
-  return isLeft && newParentNode && newParentNode.get('type') === 'ObjectProperty'
+  return isLeft && isObjectProperty(newParentNode)
     ? traverseHorizontally('RIGHT', ast, newPath)
     : newPath
 }
@@ -40,9 +40,7 @@ function traverseHorizontally(direction: HorizontalDirection, ast: any/*ASTNode*
 export default function navigate(direction: Direction, ast: ASTNode, path: ASTPath) {
   if (direction === 'UP' || direction === 'DOWN') {
     return traverseVertically(direction, ast, path);
-  } else if (['LEFT', 'RIGHT'].includes(direction)) {
-    return traverseHorizontally(direction, ast, path);
   } else {
-    throw new Error(`Unknown direction: ${direction}`);
+    return traverseHorizontally(direction, ast, path);
   }
 }

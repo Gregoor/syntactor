@@ -1,10 +1,10 @@
 // @flow
 import {isObjectProperty} from 'babel-types';
-import {List} from 'immutable';
+import {List} from '../utils/proxy-immutable';
 import type {ASTPath, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
-function updateLastIndex(path: ASTPath, direction: VerticalDirection, size) {
+function updateLastKey(path: ASTPath, direction: VerticalDirection, size) {
   return path.update(-1, direction === 'UP'
     ? (n) => Math.max(0, parseInt(n, 10) - 1)
     : (n) => Math.min(size - 1, parseInt(n, 10) + 1)
@@ -53,7 +53,7 @@ export default function findVerticalNeighborPath(
       return path;
     }
 
-    if (parentNode && isObjectProperty(parentNode.toJS())) {
+    if (parentNode && isObjectProperty(parentNode)) {
       const newKey = isUp ? 'key' : 'value';
       const newPath = parentPath.push(newKey);
       return newKey === lastKey
@@ -75,6 +75,6 @@ export default function findVerticalNeighborPath(
       return parentPath.push('end');
     }
 
-    return updateLastIndex(path, direction, parentSize);
+    return updateLastKey(path, direction, parentSize);
   }(startPath);
 }
