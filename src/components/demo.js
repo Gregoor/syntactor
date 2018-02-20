@@ -19,6 +19,7 @@ const Head = styled.h1`
   ${styles.text}
   font-size: 2em;
   text-align: center;
+  cursor: pointer;
 `;
 
 const Symbol = styled.span`
@@ -46,10 +47,42 @@ const Nav = styled.div`
 
 export default class Demo extends PureComponent<{}> {
 
+  editor: Editor;
+
+  constructor(props) {
+    super(props);
+
+    let startValue;
+    try {
+      startValue = JSON.parse(decodeURIComponent(window.location.search.substr(1).split('=')[1]));
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) {
+        throw e;
+      }
+      startValue = example;
+    }
+
+    this.state = {startValue}
+  }
+
+  updateQueryString = (json: string) => {
+    window.history.pushState({}, '',
+      '?json=' + encodeURIComponent(json)
+    );
+  };
+
+  resetEditor = () => {
+    this.setState({startValue: example});
+    this.updateQueryString(JSON.stringify(example));
+    this.editor.reset();
+  };
+
   render() {
     return (
       <div style={{maxWidth: 950, margin: '0 auto'}}>
-        <Head><Brace charCode={123}/>Syntactor<Brace charCode={125}/></Head>
+        <Head onClick={this.resetEditor}>
+          <Brace charCode={123}/>Syntactor<Brace charCode={125}/>
+        </Head>
 
         <Card style={{marginBottom: 10, minHeight: '83vh'}}>
           <Nav>
@@ -62,7 +95,12 @@ export default class Demo extends PureComponent<{}> {
             ))}
             <Symbol>]</Symbol>
           </Nav>
-          <Editor initiallyShowKeymap defaultValue={example}/>
+          <Editor
+            initiallyShowKeymap
+            defaultValue={this.state.startValue}
+            onChange={this.updateQueryString}
+            ref={(el) => this.editor = el}
+          />
         </Card>
       </div>
     );

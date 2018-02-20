@@ -69,7 +69,8 @@ const Form = styled.form`
 
 declare type Props = {
   initiallyShowKeymap: boolean,
-  defaultValue: {}
+  defaultValue: {},
+  onChange: (json: string) => any;
 };
 
 declare type EditorState = {
@@ -92,7 +93,8 @@ export default class Editor extends PureComponent<Props, {
 
   static defaultProps = {
     initiallShowKeymap: true,
-    defaultValue: {}
+    defaultValue: {},
+    onChange: () => null
   };
 
   lastDirection: any;
@@ -169,7 +171,12 @@ export default class Editor extends PureComponent<Props, {
         selected = List();
       }
       const newState = {root, selected, ...updateFn(root, selected)};
-      return Immutable.is(selected, newState.selected) && Immutable.is(root, newState.root)
+      const isRootPristine = Immutable.is(root, newState.root);
+
+      if (!isRootPristine) {
+        this.props.onChange(generate(newState.root.toJS()).code)
+      }
+      return Immutable.is(selected, newState.selected) && isRootPristine
         ? undefined
         : {
           future: List(),
@@ -503,5 +510,17 @@ export default class Editor extends PureComponent<Props, {
       </Container>
     );
   }
+
+  reset = () => {
+    this.setState({
+      future: List(),
+      history: List([
+        {
+          root: parse(this.props.defaultValue),
+          selected: List()
+        }
+      ])
+    });
+  };
 
 }
