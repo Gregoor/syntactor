@@ -173,7 +173,7 @@ export default class Editor extends PureComponent<Props, {
       const newState = {root, selected, ...updateFn(root, selected)};
       const isRootPristine = Immutable.is(root, newState.root);
 
-      if (!isRootPristine) {
+      if (newState.root && !isRootPristine) {
         this.props.onChange(generate(newState.root.toJS()).code)
       }
       return Immutable.is(selected, newState.selected) && isRootPristine
@@ -201,7 +201,11 @@ export default class Editor extends PureComponent<Props, {
       ? collectionPath.size
       : selected.get(collectionPath.size) + 1 || 0;
 
-    const isArray = isArrayExpression(root.getIn(collectionPath.butLast()));
+    const collectionNode = root.getIn(collectionPath.butLast());
+    const isArray = isArrayExpression(collectionNode);
+    const isObject = isObjectExpression(collectionNode);
+
+    if (!isArray && !isObject) return;
 
     const newRoot = root.updateIn(collectionPath, (list) => list.insert(
       itemIndex,
@@ -245,7 +249,7 @@ export default class Editor extends PureComponent<Props, {
       );
       const isRootDelete = selected.isEmpty() || (selected.size === 2 && selected.last() === 'end');
       return {
-        root: isRootDelete ? nullLiteral() : newRoot,
+        root: isRootDelete ? Immutable.fromJS(nullLiteral()) : newRoot,
         selected: isRootDelete || selected.last() === 'end'
           ? List()
           : navigate('DOWN', newRoot, navigate('UP', root, selected))
@@ -450,7 +454,7 @@ export default class Editor extends PureComponent<Props, {
         case '{':
           event.preventDefault();
           return this.replace(
-            objectExpression(List.of(objectProperty(stringLiteral(''), this.getSelectedNode()))),
+            Immutable.fromJS(objectExpression([objectProperty(stringLiteral(''), this.getSelectedNode())])),
             List.of('properties', 0, 'key')
           );
 
