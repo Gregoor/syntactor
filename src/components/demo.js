@@ -45,12 +45,16 @@ const Nav = styled.div`
   justify-content: space-between;
 `;
 
-export default class Demo extends PureComponent<{}> {
+interface State {
+  startValue: any
+}
 
-  editor: Editor;
+export default class Demo extends PureComponent<{}, State> {
 
-  constructor(props) {
-    super(props);
+  editor: Editor | null;
+
+  constructor() {
+    super();
 
     let startValue;
     try {
@@ -74,7 +78,7 @@ export default class Demo extends PureComponent<{}> {
   resetEditor = () => {
     this.setState({startValue: example});
     this.updateQueryString(JSON.stringify(example));
-    this.editor.reset();
+    this.editor && this.editor.reset();
   };
 
   render() {
