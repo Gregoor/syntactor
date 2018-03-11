@@ -29,7 +29,7 @@ import * as collections from './collections';
 import Keymap from './keymap';
 import * as literals from './literals';
 import navigate from '../navigate/index';
-import parse from '../utils/parse';
+import {parseObject} from '../utils/parse';
 import styles from '../utils/styles';
 import RootASTNode, {injectASTNodeComponents} from './ast-node';
 
@@ -107,7 +107,7 @@ export default class Editor extends PureComponent<Props, {
       future: List(),
       history: List([
         {
-          root: parse(props.defaultValue),
+          root: parseObject(props.defaultValue),
           selected: List()
         }
       ]),
@@ -371,7 +371,7 @@ export default class Editor extends PureComponent<Props, {
       return;
     }
     event.preventDefault();
-    this.insert(parse(data));
+    this.insert(parseObject(data));
   };
 
   handleKeyDown = (event: any) => {
@@ -520,7 +520,7 @@ export default class Editor extends PureComponent<Props, {
       future: List(),
       history: List([
         {
-          root: parse(this.props.defaultValue),
+          root: parseObject(this.props.defaultValue),
           selected: List()
         }
       ])

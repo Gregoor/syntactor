@@ -1,5 +1,5 @@
 // @flow
-import {isObjectProperty} from 'babel-types';
+import {isArrayExpression, isObjectExpression, isObjectProperty} from 'babel-types';
 import {List} from '../utils/proxy-immutable';
 import type {ASTPath, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
@@ -11,6 +11,10 @@ function updateLastKey(path: ASTPath, direction: VerticalDirection, size) {
   );
 }
 
+function isEnclosedExpression(node) {
+  return isArrayExpression(node) || isObjectExpression(node);
+}
+
 export default function findVerticalNeighborPath(
   direction: VerticalDirection, ast: any/*ASTNode*/, startPath: ASTPath
 ) {
@@ -18,30 +22,32 @@ export default function findVerticalNeighborPath(
     const isUp = direction === 'UP';
 
     const lastKey = path.last();
-    const parentPath = path.slice(0, -1);
+    const parentPath = path.butLast();
     const parentNode = ast.getIn(parentPath);
     if (!parentNode) {
       throw new Error('Cant happen');
     }
     const parentSize = parentNode.size;
+    const grandParentPath = parentPath.butLast();
 
     if (lastKey === 'end') {
       if (isUp) {
         return parentPath.push(Math.max(0, parentSize - 1));
-      } 
+      }
 
-      const grandParentPath = parentPath.slice(0, -1);
       const lastGrandParentKey = grandParentPath.last();
-      const greatGrandParentPath = grandParentPath.slice(0, -1);
+      const greatGrandParentPath = grandParentPath.butLast();
       const greatGrandParentNode = ast.getIn(greatGrandParentPath);
       if (
         typeof lastGrandParentKey === 'number'
-        && greatGrandParentNode
+        && isEnclosedExpression(greatGrandParentNode)
         && lastGrandParentKey === greatGrandParentNode.size - 1
       ) {
         return greatGrandParentPath.push('end');
       }
-      return find(greatGrandParentPath);
+      return lastGrandParentKey === 'value'
+        ? find(greatGrandParentPath)
+        : grandParentPath.butLast().push('end');
     }
 
     if (path.isEmpty()) {
@@ -68,11 +74,12 @@ export default function findVerticalNeighborPath(
     }
 
     if (isUp && lastKey === 0) {
-      const grandParentPath = parentPath.slice(0, -1);
       return parentPath.get(-3) === 'elements' ? grandParentPath : find(grandParentPath);
     }
+
+    const grandParentNode = ast.getIn(grandParentPath);
     if (!isUp && lastKey === parentSize - 1) {
-      return parentPath.push('end');
+      return isEnclosedExpression(grandParentNode) ? parentPath.push('end') : grandParentPath;
     }
 
     return updateLastKey(path, direction, parentSize);

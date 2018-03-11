@@ -1,5 +1,10 @@
 // @flow
-import {isLiteral, isObjectExpression, isObjectProperty} from 'babel-types';
+import {
+  isLiteral,
+  isObjectExpression,
+  isObjectProperty,
+  isProgram
+} from 'babel-types';
 import {List} from '../utils/proxy-immutable';
 import nodeTypes from '../ast';
 import type {ASTNode, ASTKey, VerticalDirection} from '../types';
@@ -11,8 +16,12 @@ function findChildKey(node: ASTNode, keys: List<string>): [?ASTKey, ?ASTNode] {
   const childNode = node.get(childKey);
   keys = keys.slice(keys.indexOf(childKey) + 1);
 
-  if (childNode) return [childKey, ((childNode: any): ASTNode)];
-  else if (keys.isEmpty() || !childKey) return [null, null];
+  if (
+    childNode && !(
+      isProgram(node) && childKey === 'directives' && childNode.isEmpty()
+    )) {
+    return [childKey, ((childNode: any): ASTNode)];
+  } else if (keys.isEmpty() || !childKey) return [null, null];
   else return findChildKey(node, keys);
 }
 

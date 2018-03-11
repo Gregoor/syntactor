@@ -1,4 +1,4 @@
-export default {
+const input = {
   scientist: 'Rick Sanchez',
   microverse: {
     scientist: 'Zeep Xanflorp',
@@ -6,4 +6,4 @@ export default {
       scientist: 'Kyle'
     }
   }
-}
+};

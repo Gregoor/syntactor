@@ -34,10 +34,13 @@ function traverseHorizontally(direction: HorizontalDirection, ast: any/*ASTNode*
   const newParentNode = ast.getIn(newPath.slice(0, -1));
   return isLeft && isObjectProperty(newParentNode)
     ? traverseHorizontally('RIGHT', ast, newPath)
-    : newPath
+    : newPath;
 }
 
 export default function navigate(direction: Direction, ast: ASTNode, path: ASTPath) {
+  if (!ast.getIn(path.last() === 'end' ? path.butLast() : path)) {
+    throw new Error('Invalid path: ' + path.toJS().toString());
+  }
   if (direction === 'UP' || direction === 'DOWN') {
     return traverseVertically(direction, ast, path);
   } else {

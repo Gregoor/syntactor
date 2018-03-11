@@ -1,4 +1,4 @@
-export default {
+const input = {
   type: 'Currency',
   dollar: [
     null
@@ -11,4 +11,4 @@ export default {
     'Smidgen'
   ],
   wat: true
-}
+};

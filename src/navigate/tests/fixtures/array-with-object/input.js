@@ -1,6 +1,6 @@
-export default [
+const input = [
   'Snuffles',
   {
     name: 'Squanchy'
   }
-]
+];
