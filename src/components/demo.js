@@ -1,8 +1,6 @@
 // @flow
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
-
-import example from '../example.json';
 import styles from '../utils/styles';
 import Editor from './editor';
 
@@ -45,6 +43,22 @@ const Nav = styled.div`
   justify-content: space-between;
 `;
 
+const example = `
+  let n = 23, j = 42;
+  const README = {
+    'WelcomeTo': 'Syntactor',
+    'Version': 1.2,
+    'In Development': true,
+    'Goals': {
+      'Manage syntax and code style': ['No Syntax Errors', 'No Bikeshedding'],
+      'Make common code transformations accessible': ['Just as many or less keystrokes, compared to other editors']
+    },
+    'Features': ['Dynamic Keymap (->)', 'Move elements/Change types without a hassle', 'Redo + Undo'],
+    'Current State': 'Only a JSON-Editor',
+    'How-To': ['Arrow Keys to navigate', 'Keymap on the right shows you all possible actions']
+  };
+`;
+
 interface State {
   startValue: any
 }
@@ -56,28 +70,27 @@ export default class Demo extends PureComponent<{}, State> {
   constructor() {
     super();
 
-    let startValue;
-    try {
-      startValue = JSON.parse(decodeURIComponent(window.location.search.substr(1).split('=')[1]));
-    } catch (e) {
-      if (!(e instanceof SyntaxError)) {
-        throw e;
-      }
-      startValue = example;
-    }
-
+    let startValue = example;
+    // try {
+    //   startValue = decodeURIComponent(window.location.search.substr(1).split('=')[1]);
+    // } catch (e) {
+    //   if (!(e instanceof SyntaxError)) {
+    //     throw e;
+    //   }
+    // }
+    
     this.state = {startValue}
   }
 
   updateQueryString = (json: string) => {
     window.history.pushState({}, '',
-      '?json=' + encodeURIComponent(json)
+      '?code=' + encodeURIComponent(json)
     );
   };
 
   resetEditor = () => {
     this.setState({startValue: example});
-    this.updateQueryString(JSON.stringify(example));
+    this.updateQueryString(example);
     this.editor && this.editor.reset();
   };
 

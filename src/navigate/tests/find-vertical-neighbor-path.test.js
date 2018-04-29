@@ -141,11 +141,21 @@ test('goes from declaration to start', () => {
   )
 });
 
+test('goes from kind to declarations', () => {
+  expectCodePath(
+    'var i = 23;',
+    'DOWN',
+    ['program', 'body', 0, 'kind'],
+    ['program', 'body', 0, 'declarations'],
+  )
+});
+
+
 test('goes to 2nd declaration', () => {
   expectCodePath(
     'var i = 23, j = 42;',
     'DOWN',
-    ['program', 'body', 0, 'declarations', 0],
+    ['program', 'body', 0, 'declarations', 0, 'id'],
     ['program', 'body', 0, 'declarations', 1]
   )
 });

@@ -14,20 +14,20 @@
     "babel-types": "^6.26.0",
     "babylon": "^6.18.0",
     "immutable": "4.0.0-rc.9",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "styled-components": "^3.1.6"
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "styled-components": "^3.2.6"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-react-app": "^3.1.1",
-    "flow-bin": "^0.66.0",
+    "flow-bin": "^0.70.0",
     "gh-pages": "1.1.0",
     "jest-immutable-matchers": "^2.0.1",
-    "react-scripts": "^1.1.1"
+    "react-scripts": "^1.1.4"
   },
   "resolutions": {
-    "jest": "22.3.0"
+    "jest": "22.4.3"
   },
   "scripts": {
     "start": "react-scripts start",

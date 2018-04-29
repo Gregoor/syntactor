@@ -24,14 +24,15 @@ import {
   isObjectProperty
 } from 'babel-types'
 import * as Immutable from '../utils/proxy-immutable';
-import type {ASTNode, ASTPath, Direction, VerticalDirection} from '../types';
+import type {ASTNodeData, ASTPath, Direction, VerticalDirection} from '../types';
 import * as collections from './collections';
+import * as declarations from './declarations';
 import Keymap from './keymap';
 import * as literals from './literals';
 import navigate from '../navigate/index';
-import {parseObject} from '../utils/parse';
+import parse, {parseObject} from '../utils/parse';
 import styles from '../utils/styles';
-import RootASTNode, {injectASTNodeComponents} from './ast-node';
+import ASTNode, {injectASTNodeComponents} from './ast-node';
 
 const {List} = Immutable;
 
@@ -41,11 +42,11 @@ function between(number, lower, upper) {
   return number >= lower && number <= upper;
 }
 
-function isEditable(node?: ASTNode) {
+function isEditable(node?: ASTNodeData) {
   return isStringLiteral(node) || isNumericLiteral(node);
 }
 
-injectASTNodeComponents({...literals, ...collections});
+injectASTNodeComponents({...collections, ...declarations, ...literals});
 
 const Container = styled.div`
   position: relative;
@@ -74,7 +75,7 @@ declare type Props = {
 };
 
 declare type EditorState = {
-  +root: ASTNode,
+  +root: ASTNodeData,
   +selected: ASTPath
 };
 
@@ -107,7 +108,7 @@ export default class Editor extends PureComponent<Props, {
       future: List(),
       history: List([
         {
-          root: parseObject(props.defaultValue),
+          root: parse(props.defaultValue).program.body,
           selected: List()
         }
       ]),
@@ -174,7 +175,7 @@ export default class Editor extends PureComponent<Props, {
       const isRootPristine = Immutable.is(root, newState.root);
 
       if (newState.root && !isRootPristine) {
-        this.props.onChange(generate(newState.root.toJS()).code)
+        this.props.onChange(generate({type: 'Program', body: newState.root.toJS()}).code)
       }
       return Immutable.is(selected, newState.selected) && isRootPristine
         ? undefined
@@ -221,7 +222,7 @@ export default class Editor extends PureComponent<Props, {
     };
   });
 
-  replace(node: ASTNode, subSelected: ASTPath = List.of()) {
+  replace(node: ASTNodeData, subSelected: ASTPath = List.of()) {
     this.addToHistory((root, selected) => ({
       root: root.updateIn(selected, () => Immutable.fromJS(node)),
       selected: selected.concat(subSelected)
@@ -498,9 +499,15 @@ export default class Editor extends PureComponent<Props, {
       .findLast((key) => ['elements', 'properties'].includes(key)) === 'elements';
     return (
       <Container tabIndex="0" ref={(el) => this.retainFocus(el)} onKeyDown={this.handleKeyDown}>
+        {window.location.host.startsWith('localhost') && (
+          <div style={{position: 'fixed', top: 0, left: 0}}>
+            {selected.toJS().map((s, i, arr) => [s, i + 1 < arr.length && ' > '])}
+          </div>
+        )}
+
         <Button type="button" onClick={this.toggleShowKeymap}>{showKeymap ? 'x' : '?'}</Button>
         <Form onChange={this.handleChange} style={{marginRight: 10}}>
-          <RootASTNode
+          <ASTNode
             lastDirection={this.lastDirection}
             node={root}
             selected={selected}

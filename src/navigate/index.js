@@ -1,7 +1,7 @@
 // @flow
 import {isObjectProperty} from 'babel-types';
 import {is} from '../utils/proxy-immutable';
-import type {ASTNode, ASTPath, Direction, HorizontalDirection, VerticalDirection} from '../types';
+import type {ASTNodeData, ASTPath, Direction, HorizontalDirection, VerticalDirection} from '../types';
 import findVerticalNeighborPath from './find-vertical-neighbor-path';
 import findVerticalPathIn from './find-vertical-path-in';
 
@@ -37,7 +37,7 @@ function traverseHorizontally(direction: HorizontalDirection, ast: any/*ASTNode*
     : newPath;
 }
 
-export default function navigate(direction: Direction, ast: ASTNode, path: ASTPath) {
+export default function navigate(direction: Direction, ast: ASTNodeData, path: ASTPath) {
   if (!ast.getIn(path.last() === 'end' ? path.butLast() : path)) {
     throw new Error('Invalid path: ' + path.toJS().toString());
   }

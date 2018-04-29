@@ -1,6 +1,7 @@
 // @flow
 import {isArrayExpression, isObjectExpression, isObjectProperty} from 'babel-types';
 import {List} from '../utils/proxy-immutable';
+import nodeTypes from '../ast';
 import type {ASTPath, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
@@ -34,20 +35,18 @@ export default function findVerticalNeighborPath(
       if (isUp) {
         return parentPath.push(Math.max(0, parentSize - 1));
       }
-
       const lastGrandParentKey = grandParentPath.last();
       const greatGrandParentPath = grandParentPath.butLast();
       const greatGrandParentNode = ast.getIn(greatGrandParentPath);
       if (
-        typeof lastGrandParentKey === 'number'
+        lastGrandParentKey !== 'value'
+        || (typeof lastGrandParentKey === 'number'
         && isEnclosedExpression(greatGrandParentNode)
-        && lastGrandParentKey === greatGrandParentNode.size - 1
+        && lastGrandParentKey === greatGrandParentNode.size - 1)
       ) {
         return greatGrandParentPath.push('end');
       }
-      return lastGrandParentKey === 'value'
-        ? find(greatGrandParentPath)
-        : grandParentPath.butLast().push('end');
+      return find(greatGrandParentPath);
     }
 
     if (path.isEmpty()) {
@@ -59,8 +58,9 @@ export default function findVerticalNeighborPath(
       return path;
     }
 
-    if (parentNode && isObjectProperty(parentNode)) {
-      const newKey = isUp ? 'key' : 'value';
+    const childKeys = (nodeTypes[parentNode.type] || {}).visitor;
+    if (childKeys) {
+      const newKey = childKeys[childKeys.indexOf(lastKey) + (isUp ? -1 : 1)];
       const newPath = parentPath.push(newKey);
       return newKey === lastKey
         || (!isUp && !isNonEmptyCollection(ast.getIn(newPath)))

@@ -71,6 +71,6 @@ describe('code', () => {
   }
 
   test('goes into declaration', () => {
-    expectCodePath('var i = 23;', 'DOWN', [], ['program', 'body', 0, 'declarations', 0, 'id'])
+    expectCodePath('var i = 23;', 'DOWN', [], ['program', 'body', 0, 'kind'])
   });
 });

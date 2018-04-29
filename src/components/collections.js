@@ -3,8 +3,8 @@ import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 import {is, List} from '../utils/proxy-immutable';
 import type {ASTNodeProps} from '../types';
-import Highlightable from './highlightable';
 import ASTNode from './ast-node';
+import Highlightable from './highlightable';
 
 const IndentContainer = styled.span`
   border-left: 1px solid rgba(0, 0, 0, .1);
@@ -28,7 +28,6 @@ class CollectionExpression extends PureComponent<ASTNodeProps & {
   openString: string,
   closeString: string
 }> {
-
   handleSelect = () => {
     const {onSelect, path} = this.props;
     onSelect(path.butLast());
@@ -71,31 +70,24 @@ class CollectionExpression extends PureComponent<ASTNodeProps & {
         </Highlightable>
       );
   }
-
 }
 
 export class ArrayExpression extends ASTNode {
-
-  selected: any;
-
-  getSelectedInput() {
-    return this.selected && this.selected.getSelectedInput();
-  }
-
   render() {
-    const {lastDirection, level, node, onSelect, selected} = this.props;
+    const {lastDirection, node, onSelect, selected} = this.props;
+    const level = this.props.level + 1;
     const path = this.props.path.push('elements');
     return (
-      <CollectionExpression openString="[" closeString="]" {...this.props} path={path}>
+      <CollectionExpression openString="[" closeString="]" {...this.props} level={level} path={path}>
       {node.elements.map((node, i) => {
           const isSelected = selected && is(selected.slice(0, 2), List.of('elements', i));
           return (
             <span key={i}>
               <ASTNode
                 {...{level, node, onSelect}}
+                {...(isSelected ? {ref: this.selectedRef} : {})}
                 lastDirection={isSelected ? lastDirection : null}
                 path={path.push(i)}
-                ref={(el) => isSelected && (this.selected = el)}
                 selected={selected && isSelected ? selected.slice(2) : null}
               />
             </span>
@@ -104,45 +96,39 @@ export class ArrayExpression extends ASTNode {
       </CollectionExpression>
     );
   }
-
 }
 
 export class ObjectExpression extends ASTNode {
-
-  selected: any;
-
-  getSelectedInput() {
-    return this.selected && this.selected.getSelectedInput();
-  }
-
   render() {
-    const {lastDirection, level, node, onSelect, selected} = this.props;
+    const {lastDirection, node, onSelect, selected} = this.props;
+    const level = this.props.level + 1;
     const keyStyle = {color: '#d33682'};
     const path = this.props.path.push('properties');
     return (
-      <CollectionExpression openString="{" closeString="}" {...this.props} path={path}>
+      <CollectionExpression openString="{" closeString="}" {...this.props} level={level} path={path}>
         {node.properties.map((node, i) => {
-          const isKeySelected = selected && is(List.of('properties', i, 'key'), selected);
-          const isValueSelected = selected && is(selected.slice(0, 3), List.of('properties', i, 'value'));
+          const isPropertySelected = selected && is(selected.slice(0, 2), List.of('properties', i));
+          const isKeySelected = selected && isPropertySelected && selected.get(2) === 'key';
+          const isValueSelected = selected && isPropertySelected && selected.get(2) === 'value';
           const propertyPath = path.push(i);
           return (
             <span key={i}>
               <ASTNode
                 {...{level, onSelect}}
+                {...(isKeySelected ? {ref: this.selectedRef} : {})}
                 lastDirection={isKeySelected ? lastDirection : null}
                 node={node.key}
                 path={propertyPath.push('key')}
-                ref={(el) => isKeySelected && (this.selected = el)}
                 selected={isKeySelected}
                 style={keyStyle}
               />
               <Symbol>:</Symbol>{' '}
               <ASTNode
                 {...{level, onSelect}}
+                {...(isValueSelected ? {ref: this.selectedRef} : {})}
                 lastDirection={isValueSelected ? lastDirection : null}
                 node={node.value}
                 path={propertyPath.push('value')}
-                ref={(el) => isValueSelected && (this.selected = el)}
                 selected={selected && isValueSelected ? selected.slice(3) : null}
               />
             </span>
@@ -151,5 +137,4 @@ export class ObjectExpression extends ASTNode {
       </CollectionExpression>
     );
   }
-
 }

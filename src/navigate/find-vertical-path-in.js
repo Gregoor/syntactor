@@ -7,10 +7,10 @@ import {
 } from 'babel-types';
 import {List} from '../utils/proxy-immutable';
 import nodeTypes from '../ast';
-import type {ASTNode, ASTKey, VerticalDirection} from '../types';
+import type {ASTNodeData, ASTKey, VerticalDirection} from '../types';
 import {isNonEmptyCollection} from './utils';
 
-function findChildKey(node: ASTNode, keys: List<string>): [?ASTKey, ?ASTNode] {
+function findChildKey(node: ASTNodeData, keys: List<string>): [?ASTKey, ?ASTNodeData] {
   const childKey = keys.first();
 
   const childNode = node.get(childKey);
@@ -20,7 +20,7 @@ function findChildKey(node: ASTNode, keys: List<string>): [?ASTKey, ?ASTNode] {
     childNode && !(
       isProgram(node) && childKey === 'directives' && childNode.isEmpty()
     )) {
-    return [childKey, ((childNode: any): ASTNode)];
+    return [childKey, ((childNode: any): ASTNodeData)];
   } else if (keys.isEmpty() || !childKey) return [null, null];
   else return findChildKey(node, keys);
 }
@@ -36,6 +36,7 @@ export default function findVerticalPathIn(direction: VerticalDirection, node?: 
 
   const verticalKeys = new List(nodeTypes[node.type].visitor || []);
   const [childKey, childNode] = findChildKey(node, isUp ? verticalKeys.reverse() : verticalKeys);
+  if (childKey === 'kind') return List.of(childKey);
 
   if (!childKey || (!isUp && (!childKey || isObjectExpression(childNode)))) {
     return new List();

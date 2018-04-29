@@ -586,7 +586,7 @@ const nodeTypes: {[key: string]: ASTNode} = {
         optional: true,
       },
     },
-    visitor: ['key', 'value', 'decorators'],
+    visitor: ['key', 'value', /*TODO:'decorators'*/],
     aliases: ['UserWhitespacable', 'Property', 'ObjectMember'],
   },
 
@@ -717,7 +717,7 @@ const nodeTypes: {[key: string]: ASTNode} = {
   },
 
   VariableDeclaration: {
-    visitor: ['declarations'],
+    visitor: ['kind', 'declarations'],
     aliases: ['Statement', 'Declaration'],
     fields: {
       declare: {

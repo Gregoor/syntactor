@@ -2,5 +2,6 @@
 <PROJECT_ROOT>/node_modules/fbjs/.*
 <PROJECT_ROOT>/node_modules/styled-components/.*
 <PROJECT_ROOT>/node_modules/promise/.*
+<PROJECT_ROOT>/eslint-plugin-jsx-a11y/__mocks__/.*
 
 [libs]
