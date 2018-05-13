@@ -50,7 +50,6 @@ const Nav = styled.div`
 `;
 
 const example = `
-  let n = 23, j = 42;
   const README = {
     'WelcomeTo': 'Syntactor',
     'Version': 1.2,
@@ -75,14 +74,17 @@ export default class Demo extends PureComponent<{}, State> {
   constructor() {
     super();
 
-    let startValue = example;
-    // try {
-    //   startValue = decodeURIComponent(window.location.search.substr(1).split('=')[1]);
-    // } catch (e) {
-    //   if (!(e instanceof SyntaxError)) {
-    //     throw e;
-    //   }
-    // }
+    let startValue;
+    try {
+      startValue = decodeURIComponent(
+        window.location.search.substr(1).split('=')[1] || example
+      );
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) {
+        throw e;
+      }
+      startValue = example;
+    }
 
     this.state = { startValue };
   }
@@ -98,6 +100,7 @@ export default class Demo extends PureComponent<{}, State> {
   };
 
   render() {
+    const { startValue } = this.state;
     return (
       <div style={{ maxWidth: 950, margin: '0 auto' }}>
         <Head onClick={this.resetEditor}>
@@ -115,9 +118,15 @@ export default class Demo extends PureComponent<{}, State> {
             ))}
             <Symbol>]</Symbol>
           </Nav>
+          {startValue !== example && (
+            <div style={{ marginBottom: 10 }}>
+              The following content was written by a user. To reset the editor{' '}
+              <button onClick={this.resetEditor}>Click Here</button>
+            </div>
+          )}
           <Editor
             initiallyShowKeymap
-            defaultValue={this.state.startValue}
+            defaultValue={startValue}
             onChange={this.updateQueryString}
             ref={el => (this.editor = el)}
           />

@@ -599,14 +599,9 @@ export default class Editor extends PureComponent<
   }
 
   reset = () => {
-    this.setState({
-      future: List(),
-      history: List([
-        {
-          root: parseObject(this.props.defaultValue),
-          selected: List()
-        }
-      ])
-    });
+    this.addToHistory(() => ({
+      root: parse(this.props.defaultValue),
+      selected: List()
+    }));
   };
 }
