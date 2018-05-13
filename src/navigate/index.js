@@ -1,49 +1,91 @@
 // @flow
-import {isObjectProperty} from 'babel-types';
-import {is} from '../utils/proxy-immutable';
-import type {ASTNodeData, ASTPath, Direction, HorizontalDirection, VerticalDirection} from '../types';
-import findVerticalNeighborPath from './find-vertical-neighbor-path';
-import findVerticalPathIn from './find-vertical-path-in';
+import {
+  isArrayExpression,
+  isFile,
+  isLiteral,
+  isObjectExpression,
+  isObjectProperty,
+  isProgram,
+  isVariableDeclarator,
+  VISITOR_KEYS
+} from 'babel-types';
+import { is, List } from 'immutable';
+import type { ASTNodeData, ASTPath, Direction } from '../types';
 
-function traverseVertically(direction: VerticalDirection, ast: any/*ASTNode*/, path: ASTPath) {
-  const isUp = direction === 'UP';
-  if (!isUp && path.last() === 'end' && path.size === 2) return path;
+const NON_NAVIGATABLE_TESTS = [
+  isFile,
+  isProgram,
+  isObjectProperty,
+  isVariableDeclarator
+];
+const ENCLOSED_TESTS = [isArrayExpression, isObjectExpression];
 
-  const neighborPath = findVerticalNeighborPath(direction, ast, path);
-  if (
-    (neighborPath.isEmpty() && isUp)
-    || (
-      !is(path, neighborPath) && neighborPath.get(-2) === 'elements'
-      && !(isUp && path.last() === 'end')
-    )
-  ) return neighborPath;
-  return neighborPath.concat(findVerticalPathIn(direction, ast.getIn(neighborPath)));
-}
+function traverseFast(node, enter, path = List()) {
+  if (!node) return;
 
-function traverseHorizontally(direction: HorizontalDirection, ast: any/*ASTNode*/, path: ASTPath) {
-  const isLeft = direction === 'LEFT';
+  const keys = VISITOR_KEYS[node.type];
+  if (!keys) return;
 
-  const parentPath = path.slice(0, -1);
-  const newKey = isLeft ? 'key' : 'value';
-  const parentNode = ast.getIn(parentPath);
-  if (isObjectProperty(parentNode) && newKey !== path.last()) {
-    return parentPath.push(newKey);
+  if (NON_NAVIGATABLE_TESTS.every(test => !test(node))) {
+    enter(path);
   }
 
-  const newPath = traverseVertically(isLeft ? 'UP' : 'DOWN', ast, path);
-  const newParentNode = ast.getIn(newPath.slice(0, -1));
-  return isLeft && isObjectProperty(newParentNode)
-    ? traverseHorizontally('RIGHT', ast, newPath)
-    : newPath;
+  for (const key of keys) {
+    const subNode = node[key];
+    const subPath = path.push(key);
+
+    if (Array.isArray(subNode)) {
+      for (let i = 0; i < subNode.length; i++) {
+        traverseFast(subNode[i], enter, subPath.push(i));
+      }
+      if (subNode.length && ENCLOSED_TESTS.some(test => test(node))) {
+        enter(subPath.push('end'));
+      }
+    } else {
+      traverseFast(subNode, enter, subPath);
+    }
+  }
 }
 
-export default function navigate(direction: Direction, ast: ASTNodeData, path: ASTPath) {
-  if (!ast.getIn(path.last() === 'end' ? path.butLast() : path)) {
-    throw new Error('Invalid path: ' + path.toJS().toString());
-  }
-  if (direction === 'UP' || direction === 'DOWN') {
-    return traverseVertically(direction, ast, path);
+function traverseAndCollectPaths(ast) {
+  const paths = [];
+  traverseFast(ast, path => {
+    paths.push(path);
+  });
+  return paths;
+}
+
+function directionAsBools(direction: Direction) {
+  return {
+    isDown: direction === 'DOWN',
+    isLeft: direction === 'LEFT',
+    isRight: direction === 'RIGHT',
+    isUp: direction === 'UP'
+  };
+}
+
+const astPaths: Map<ASTNodeData, ASTPath[]> = new Map();
+export default function navigate(
+  direction: Direction,
+  ast: ASTNodeData,
+  path: ASTPath
+) {
+  const { isDown, isRight, isUp } = directionAsBools(direction);
+  let paths: ASTPath[];
+  if (astPaths.has(ast)) {
+    paths = (astPaths.get(ast): ASTPath[]);
   } else {
-    return traverseHorizontally(direction, ast, path);
+    paths = traverseAndCollectPaths(ast.toJS());
+    astPaths.set(ast, paths);
   }
+  const index = paths.findIndex(p => is(p, path));
+  const nextPath = paths[index + (isDown || isRight ? 1 : -1)];
+  return (isDown && path.last() === 'key') ||
+    (isUp && path.last() === 'key' && nextPath.last() === 'value') ||
+    ((isUp || isDown) &&
+      path.last() === 'value' &&
+      nextPath.last() === 'key' &&
+      (isUp || isLiteral(ast.getIn(path))))
+    ? paths[index + (isDown ? 2 : -2)] || nextPath || path
+    : nextPath || path;
 }

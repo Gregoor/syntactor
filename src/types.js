@@ -18,4 +18,5 @@ export type ASTNodeProps = {
   onSelect: (ASTPath) => ASTPath,
   path: ASTPath,
   selected?: ASTPath,
+  style?: any
 };

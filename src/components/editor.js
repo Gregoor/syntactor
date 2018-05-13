@@ -14,24 +14,26 @@ import {
   objectProperty,
 
   isBooleanLiteral,
-  isLiteral,
   isNullLiteral,
   isNumericLiteral,
   isStringLiteral,
 
   isArrayExpression,
   isObjectExpression,
-  isObjectProperty
+  isObjectProperty,
+
+  isIdentifier
 } from 'babel-types'
+import navigate from '../navigate';
 import * as Immutable from '../utils/proxy-immutable';
+import parse, {parseObject} from '../utils/parse';
+import styles from '../utils/styles';
 import type {ASTNodeData, ASTPath, Direction, VerticalDirection} from '../types';
 import * as collections from './collections';
 import * as declarations from './declarations';
 import Keymap from './keymap';
 import * as literals from './literals';
-import navigate from '../navigate/index';
-import parse, {parseObject} from '../utils/parse';
-import styles from '../utils/styles';
+import * as misc from './misc';
 import ASTNode, {injectASTNodeComponents} from './ast-node';
 
 const {List} = Immutable;
@@ -43,10 +45,15 @@ function between(number, lower, upper) {
 }
 
 function isEditable(node?: ASTNodeData) {
-  return isStringLiteral(node) || isNumericLiteral(node);
+  return isStringLiteral(node) || isNumericLiteral(node) || isIdentifier(node);
 }
 
-injectASTNodeComponents({...collections, ...declarations, ...literals});
+injectASTNodeComponents({
+  ...collections,
+  ...declarations,
+  ...literals,
+  ...misc
+});
 
 const Container = styled.div`
   position: relative;
@@ -86,6 +93,8 @@ const INCREMENTS = {
   D: -10
 };
 
+const SELECTED_PREFIX = List.of('program', 'body');
+
 export default class Editor extends PureComponent<Props, {
   future: List<EditorState>,
   history: List<EditorState>,
@@ -100,7 +109,7 @@ export default class Editor extends PureComponent<Props, {
 
   lastDirection: any;
 
-  root: any;
+  rootRef: {current: null | ASTNode<void>} = React.createRef();
 
   constructor(props: Props) {
     super(props);
@@ -108,8 +117,8 @@ export default class Editor extends PureComponent<Props, {
       future: List(),
       history: List([
         {
-          root: parse(props.defaultValue).program.body,
-          selected: List()
+          root: parse(props.defaultValue),
+          selected: SELECTED_PREFIX
         }
       ]),
       showKeymap: props.initiallyShowKeymap
@@ -140,8 +149,6 @@ export default class Editor extends PureComponent<Props, {
       }
     }
   };
-
-  bindRoot = (el: any) => this.root = el;
 
   getCurrentEditorState() {
     return this.state.history.first();
@@ -175,7 +182,7 @@ export default class Editor extends PureComponent<Props, {
       const isRootPristine = Immutable.is(root, newState.root);
 
       if (newState.root && !isRootPristine) {
-        this.props.onChange(generate({type: 'Program', body: newState.root.toJS()}).code)
+        this.props.onChange(generate(newState.root.toJS()).code)
       }
       return Immutable.is(selected, newState.selected) && isRootPristine
         ? undefined
@@ -384,23 +391,16 @@ export default class Editor extends PureComponent<Props, {
       ArrowLeft: 'LEFT',
       ArrowRight: 'RIGHT',
     }[key];
-    const selectedInput: any = this.root.getSelectedInput();
-    const isVerticalDirection = ['UP', 'DOWN'].includes(direction);
+    const selectedInput: any = this.rootRef.current.getSelectedInput();
     if (!altKey && direction && (
-        isVerticalDirection || !selectedInput
+        direction === 'UP' || direction === 'DOWN' || !selectedInput
         || !between(selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1), 0, selectedInput.value.length)
       )) {
       event.preventDefault();
-      return this.changeSelected((root, selected) => {
-        const newSelected = navigate(direction, root, selected);
-        return ({
-          direction,
-          selected: isVerticalDirection && selected.last() === 'value' && newSelected.last() === 'key'
-          && isLiteral(root.getIn(selected)) && isLiteral(root.getIn(newSelected))
-            ? newSelected.set(-1, 'value')
-            : newSelected
-        });
-      });
+      return this.changeSelected((root, selected) => ({
+        direction,
+        selected: navigate(direction, root, selected)
+      }));
     }
 
     const increment = INCREMENTS[key];
@@ -486,7 +486,7 @@ export default class Editor extends PureComponent<Props, {
 
   handleChange = ({target: {value}}: any) => {
     this.addToHistory((root, selected) => ({
-      root: root.setIn(selected.push('value'), value)
+      root: root.setIn(selected.push(selected.last() === 'id' ? 'name' : 'value'), value)
     }));
   };
 
@@ -512,7 +512,7 @@ export default class Editor extends PureComponent<Props, {
             node={root}
             selected={selected}
             onSelect={this.handleSelect}
-            ref={this.bindRoot}
+            ref={this.rootRef}
           />
         </Form>
         {showKeymap && (

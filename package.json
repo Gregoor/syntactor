@@ -1,6 +1,6 @@
 {
   "name": "syntactor",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "homepage": "https://gregoor.github.io/syntactor",
   "license": "MIT",
   "private": false,
@@ -21,13 +21,9 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-react-app": "^3.1.1",
-    "flow-bin": "^0.70.0",
+    "flow-bin": "^0.71.0",
     "gh-pages": "1.1.0",
-    "jest-immutable-matchers": "^2.0.1",
     "react-scripts": "^1.1.4"
-  },
-  "resolutions": {
-    "jest": "22.4.3"
   },
   "scripts": {
     "start": "react-scripts start",

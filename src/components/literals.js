@@ -1,24 +1,20 @@
 // @flow
-import React, {PureComponent} from 'react';
+import React from 'react';
 import {List} from '../utils/proxy-immutable';
-import type {ASTNodeProps} from '../types';
 import ASTNode from './ast-node';
 import Editable from './editable';
 import Highlightable from './highlightable';
-import Focusable from './focusable';
 
 class Literal extends ASTNode<{style?: any, tabIndex?: string}> {
   render() {
-    const {children, onSelect, path, selected, style, tabIndex} = this.props;
+    const {children, selected, style, tabIndex} = this.props;
     return (
-      <Focusable {...{onSelect, path, selected}}>
-        <Highlightable
-          highlighted={selected}
-          {...{style, tabIndex}}
-        >
-          {children}
-        </Highlightable>
-      </Focusable>
+      <Highlightable
+        highlighted={selected}
+        {...{style, tabIndex}}
+      >
+        {children}
+      </Highlightable>
     );
   }
 }
@@ -38,21 +34,13 @@ export class BooleanLiteral extends ASTNode {
 }
 
 export class NumericLiteral extends ASTNode {
-  editable: any;
-
-  getSelectedInput() {
-    return this.editable.getInput();
-  }
-
-  bindElement = (el: any) => this.editable = el;
-
   render() {
-    const {lastDirection, node, selected} = this.props;
+    const {lastDirection, node} = this.props;
     return (
       <Literal {...this.props}>
         <Editable
-          ref={this.bindElement}
-          focused={selected}
+          {...this.props}
+          ref={this.selectedRef}
           lastDirection={lastDirection}
           style={{color: '#268bd2'}}
         >
@@ -73,31 +61,21 @@ export class NullLiteral extends ASTNode {
   }
 }
 
-export class StringLiteral extends PureComponent<ASTNodeProps & {
-  style?: any
-}> {
+export class StringLiteral extends ASTNode {
   static defaultProps = {
     path: new List()
   };
 
-  editable: any;
-
-  getSelectedInput() {
-    return this.editable.getInput();
-  }
-
-  bindElement = (el: any) => this.editable = el;
-
   render() {
-    const {lastDirection, node, selected, style} = this.props;
+    const {lastDirection, node, style} = this.props;
     const mergedStyle = {color: '#b58900', display: 'inline-block', ...style};
     return (
       <Literal {...this.props} style={mergedStyle}>
         "
         <Editable
-          ref={this.bindElement}
+          {...this.props}
+          ref={this.selectedRef}
           lastDirection={lastDirection}
-          focused={!!selected}
           style={mergedStyle}
         >
           {node.value}

@@ -11,7 +11,7 @@ const blink = keyframes`
 `;
 
 export default styled.span`
+  animation: ${blink} 1s linear infinite;
   ${(props) => props.highlighted && !props.light && 'outline: 1px solid grey;'}
   ${(props) => props.light && 'background: rgba(0, 0, 0, .05);'}
-  animation: ${blink} 1s linear infinite;
 `;
