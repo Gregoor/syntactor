@@ -1,5 +1,5 @@
 // @flow
-import React, {Fragment} from 'react';
+import React, { Fragment } from 'react';
 import ASTNode from './ast-node';
 import Editable from './editable';
 import Highlightable from './highlightable';
@@ -19,7 +19,12 @@ export class Identifier extends ASTNode {
 
 export class VariableDeclaration extends ASTNode {
   render() {
-    const { node: { kind, declarations }, onSelect, path, selected } = this.props;
+    const {
+      node: { kind, declarations },
+      onSelect,
+      path,
+      selected
+    } = this.props;
     return (
       <Highlightable highlighted={selected && selected.isEmpty()}>
         <b onClick={() => onSelect(path)}>{kind}</b>{' '}

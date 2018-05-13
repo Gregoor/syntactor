@@ -1,5 +1,5 @@
 // @flow
-import styled, {keyframes} from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 const blink = keyframes`
   from, to {
@@ -12,6 +12,7 @@ const blink = keyframes`
 
 export default styled.span`
   animation: ${blink} 1s linear infinite;
-  ${(props) => props.highlighted && !props.light && 'outline: 1px solid grey;'}
-  ${(props) => props.light && 'background: rgba(0, 0, 0, .05);'}
+  ${props =>
+    props.highlighted && !props.light && 'outline: 1px solid grey;'} ${props =>
+      props.light && 'background: rgba(0, 0, 0, .05);'};
 `;

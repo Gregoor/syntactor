@@ -2,7 +2,7 @@ import Immutable from 'immutable';
 
 const accessor = new Proxy(Object.prototype, {
   get(target, property, receiver) {
-    return receiver.get(property)
+    return receiver.get(property);
   }
 });
 

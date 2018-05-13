@@ -1,18 +1,15 @@
 // @flow
 import React from 'react';
-import {List} from '../utils/proxy-immutable';
+import { List } from '../utils/proxy-immutable';
 import ASTNode from './ast-node';
 import Editable from './editable';
 import Highlightable from './highlightable';
 
-class Literal extends ASTNode<{style?: any, tabIndex?: string}> {
+class Literal extends ASTNode<{ style?: any, tabIndex?: string }> {
   render() {
-    const {children, selected, style, tabIndex} = this.props;
+    const { children, selected, style, tabIndex } = this.props;
     return (
-      <Highlightable
-        highlighted={selected}
-        {...{style, tabIndex}}
-      >
+      <Highlightable highlighted={selected} {...{ style, tabIndex }}>
         {children}
       </Highlightable>
     );
@@ -35,14 +32,14 @@ export class BooleanLiteral extends ASTNode {
 
 export class NumericLiteral extends ASTNode {
   render() {
-    const {lastDirection, node} = this.props;
+    const { lastDirection, node } = this.props;
     return (
       <Literal {...this.props}>
         <Editable
           {...this.props}
           ref={this.selectedRef}
           lastDirection={lastDirection}
-          style={{color: '#268bd2'}}
+          style={{ color: '#268bd2' }}
         >
           {node.value}
         </Editable>
@@ -57,7 +54,11 @@ export class NullLiteral extends ASTNode {
   }
 
   render() {
-    return <Literal tabIndex="0" {...this.props}><b>null</b></Literal>;
+    return (
+      <Literal tabIndex="0" {...this.props}>
+        <b>null</b>
+      </Literal>
+    );
   }
 }
 
@@ -67,8 +68,8 @@ export class StringLiteral extends ASTNode {
   };
 
   render() {
-    const {lastDirection, node, style} = this.props;
-    const mergedStyle = {color: '#b58900', display: 'inline-block', ...style};
+    const { lastDirection, node, style } = this.props;
+    const mergedStyle = { color: '#b58900', display: 'inline-block', ...style };
     return (
       <Literal {...this.props} style={mergedStyle}>
         "
@@ -82,6 +83,6 @@ export class StringLiteral extends ASTNode {
         </Editable>
         "
       </Literal>
-    )
+    );
   }
 }

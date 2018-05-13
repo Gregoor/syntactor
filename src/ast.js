@@ -1,5 +1,10 @@
 // @flow
-import {BINARY_OPERATORS, LOGICAL_OPERATORS, UNARY_OPERATORS, UPDATE_OPERATORS} from 'babel-types';
+import {
+  BINARY_OPERATORS,
+  LOGICAL_OPERATORS,
+  UNARY_OPERATORS,
+  UPDATE_OPERATORS
+} from 'babel-types';
 
 type ASTNode = {|
   fields?: {
@@ -8,129 +13,125 @@ type ASTNode = {|
       values?: any[],
       each?: string | string[],
       default?: any,
-      optional?: true,
+      optional?: true
     |}
   },
   visitor?: string[],
   aliases?: string[],
   inherits?: string,
   deprecatedAlias?: string
-|}
+|};
 
 const functionCommon = {
   params: {
     type: 'array',
-    each: 'LVal',
+    each: 'LVal'
   },
   generator: {
     type: 'boolean',
-    default: false,
+    default: false
   },
   async: {
     type: 'boolean',
-    default: false,
-  },
+    default: false
+  }
 };
 
 const functionTypeAnnotationCommon = {
   returnType: {
     type: ['TypeAnnotation', 'TSTypeAnnotation', 'Noop'],
-    optional: true,
+    optional: true
   },
   typeParameters: {
-    type: [
-      'TypeParameterDeclaration',
-      'TSTypeParameterDeclaration',
-      'Noop',
-    ],
-    optional: true,
-  },
+    type: ['TypeParameterDeclaration', 'TSTypeParameterDeclaration', 'Noop'],
+    optional: true
+  }
 };
 
 const functionDeclarationCommon = {
   ...functionCommon,
   declare: {
     type: 'boolean',
-    optional: true,
+    optional: true
   },
   id: {
     type: 'Identifier',
-    optional: true, // May be null for `default function`
-  },
+    optional: true // May be null for `default function`
+  }
 };
 
 const patternLikeCommon = {
   typeAnnotation: {
     // TODO: @babel/plugin-transform-flow-comments puts a Noop here, is there a better way?
     type: ['TypeAnnotation', 'TSTypeAnnotation', 'Noop'],
-    optional: true,
+    optional: true
   },
   decorators: {
     type: 'array',
-    each: 'Decorator',
-  },
+    each: 'Decorator'
+  }
 };
 
-const nodeTypes: {[key: string]: ASTNode} = {
+const nodeTypes: { [key: string]: ASTNode } = {
   ArrayExpression: {
     fields: {
       elements: {
         type: 'array',
         each: ['null', 'Expression', 'SpreadElement'],
-        default: [],
-      },
+        default: []
+      }
     },
     visitor: ['elements'],
-    aliases: ['Expression'],
+    aliases: ['Expression']
   },
 
   AssignmentExpression: {
     fields: {
       operator: {
-        type: 'string',
+        type: 'string'
       },
       left: {
-        type: 'LVal',
+        type: 'LVal'
       },
       right: {
-        type: 'Expression',
-      },
+        type: 'Expression'
+      }
     },
     visitor: ['left', 'right'],
-    aliases: ['Expression'],
+    aliases: ['Expression']
   },
 
   BinaryExpression: {
     fields: {
       operator: {
-        type: BINARY_OPERATORS,
+        type: BINARY_OPERATORS
       },
       left: {
-        type: 'Expression',
+        type: 'Expression'
       },
       right: {
-        type: 'Expression',
-      },
+        type: 'Expression'
+      }
     },
     visitor: ['left', 'right'],
-    aliases: ['Binary', 'Expression'],
+    aliases: ['Binary', 'Expression']
   },
 
   Directive: {
     visitor: ['value'],
     fields: {
       value: {
-        type: 'DirectiveLiteral',
-      },
-    },
+        type: 'DirectiveLiteral'
+      }
+    }
   },
 
   DirectiveLiteral: {
     fields: {
       value: {
-        type: 'string',
-      },
-    },
+        type: 'string'
+      }
+    }
   },
 
   BlockStatement: {
@@ -139,14 +140,14 @@ const nodeTypes: {[key: string]: ASTNode} = {
       directives: {
         type: 'array',
         each: 'Directive',
-        default: [],
+        default: []
       },
       body: {
         type: 'array',
-        each: 'Statement',
-      },
+        each: 'Statement'
+      }
     },
-    aliases: ['Scopable', 'BlockParent', 'Block', 'Statement'],
+    aliases: ['Scopable', 'BlockParent', 'Block', 'Statement']
   },
 
   BreakStatement: {
@@ -154,10 +155,10 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       label: {
         type: 'Identifier',
-        optional: true,
-      },
+        optional: true
+      }
     },
-    aliases: ['Statement', 'Terminatorless', 'CompletionStatement'],
+    aliases: ['Statement', 'Terminatorless', 'CompletionStatement']
   },
 
   CallExpression: {
@@ -165,17 +166,17 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Expression'],
     fields: {
       callee: {
-        type: 'Expression',
+        type: 'Expression'
       },
       arguments: {
         type: 'array',
-        each: ['Expression', 'SpreadElement', 'JSXNamespacedName'],
+        each: ['Expression', 'SpreadElement', 'JSXNamespacedName']
       },
       optional: {
         type: [true, false],
-        optional: true,
+        optional: true
       }
-    },
+    }
   },
 
   CatchClause: {
@@ -183,29 +184,29 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       param: {
         type: 'Identifier',
-        optional: true,
+        optional: true
       },
       body: {
-        type: 'BlockStatement',
-      },
+        type: 'BlockStatement'
+      }
     },
-    aliases: ['Scopable', 'BlockParent'],
+    aliases: ['Scopable', 'BlockParent']
   },
 
   ConditionalExpression: {
     visitor: ['test', 'consequent', 'alternate'],
     fields: {
       test: {
-        type: 'Expression',
+        type: 'Expression'
       },
       consequent: {
-        type: 'Expression',
+        type: 'Expression'
       },
       alternate: {
-        type: 'Expression',
-      },
+        type: 'Expression'
+      }
     },
-    aliases: ['Expression', 'Conditional'],
+    aliases: ['Expression', 'Conditional']
   },
 
   ContinueStatement: {
@@ -213,50 +214,50 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       label: {
         type: 'Identifier',
-        optional: true,
-      },
+        optional: true
+      }
     },
-    aliases: ['Statement', 'Terminatorless', 'CompletionStatement'],
+    aliases: ['Statement', 'Terminatorless', 'CompletionStatement']
   },
 
   DebuggerStatement: {
-    aliases: ['Statement'],
+    aliases: ['Statement']
   },
 
   DoWhileStatement: {
     visitor: ['test', 'body'],
     fields: {
       test: {
-        type: 'Expression',
+        type: 'Expression'
       },
       body: {
-        type: 'Statement',
-      },
+        type: 'Statement'
+      }
     },
-    aliases: ['Statement', 'BlockParent', 'Loop', 'While', 'Scopable'],
+    aliases: ['Statement', 'BlockParent', 'Loop', 'While', 'Scopable']
   },
 
   EmptyStatement: {
-    aliases: ['Statement'],
+    aliases: ['Statement']
   },
 
   ExpressionStatement: {
     visitor: ['expression'],
     fields: {
       expression: {
-        type: 'Expression',
-      },
+        type: 'Expression'
+      }
     },
-    aliases: ['Statement', 'ExpressionWrapper'],
+    aliases: ['Statement', 'ExpressionWrapper']
   },
 
   File: {
     visitor: ['program'],
     fields: {
       program: {
-        type: 'Program',
-      },
-    },
+        type: 'Program'
+      }
+    }
   },
 
   ForInStatement: {
@@ -267,19 +268,19 @@ const nodeTypes: {[key: string]: ASTNode} = {
       'For',
       'BlockParent',
       'Loop',
-      'ForXStatement',
+      'ForXStatement'
     ],
     fields: {
       left: {
-        type: ['VariableDeclaration', 'LVal'],
+        type: ['VariableDeclaration', 'LVal']
       },
       right: {
-        type: 'Expression',
+        type: 'Expression'
       },
       body: {
-        type: 'Statement',
-      },
-    },
+        type: 'Statement'
+      }
+    }
   },
 
   ForStatement: {
@@ -288,20 +289,20 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       init: {
         type: ['VariableDeclaration', 'Expression'],
-        optional: true,
+        optional: true
       },
       test: {
         type: 'Expression',
-        optional: true,
+        optional: true
       },
       update: {
         type: 'Expression',
-        optional: true,
+        optional: true
       },
       body: {
-        type: 'Statement',
-      },
-    },
+        type: 'Statement'
+      }
+    }
   },
 
   FunctionDeclaration: {
@@ -310,8 +311,8 @@ const nodeTypes: {[key: string]: ASTNode} = {
       ...functionDeclarationCommon,
       ...functionTypeAnnotationCommon,
       body: {
-        type: 'BlockStatement',
-      },
+        type: 'BlockStatement'
+      }
     },
     aliases: [
       'Scopable',
@@ -320,8 +321,8 @@ const nodeTypes: {[key: string]: ASTNode} = {
       'FunctionParent',
       'Statement',
       'Pureish',
-      'Declaration',
-    ],
+      'Declaration'
+    ]
   },
 
   FunctionExpression: {
@@ -332,19 +333,19 @@ const nodeTypes: {[key: string]: ASTNode} = {
       'BlockParent',
       'FunctionParent',
       'Expression',
-      'Pureish',
+      'Pureish'
     ],
     fields: {
       ...functionCommon,
       ...functionTypeAnnotationCommon,
       id: {
         type: 'Identifier',
-        optional: true,
+        optional: true
       },
       body: {
-        type: 'BlockStatement',
-      },
-    },
+        type: 'BlockStatement'
+      }
+    }
   },
 
   Identifier: {
@@ -353,13 +354,13 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       ...patternLikeCommon,
       name: {
-        type: 'string', // check out isValidIdentifier in Babel
+        type: 'string' // check out isValidIdentifier in Babel
       },
       optional: {
         type: 'boolean',
-        optional: true,
-      },
-    },
+        optional: true
+      }
+    }
   },
 
   IfStatement: {
@@ -367,16 +368,16 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Statement', 'Conditional'],
     fields: {
       test: {
-        type: 'Expression',
+        type: 'Expression'
       },
       consequent: {
-        type: 'Statement',
+        type: 'Statement'
       },
       alternate: {
         optional: true,
-        type: 'Statement',
-      },
-    },
+        type: 'Statement'
+      }
+    }
   },
 
   LabeledStatement: {
@@ -384,44 +385,44 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Statement'],
     fields: {
       label: {
-        type: 'Identifier',
+        type: 'Identifier'
       },
       body: {
-        type: 'Statement',
-      },
-    },
+        type: 'Statement'
+      }
+    }
   },
 
   StringLiteral: {
     fields: {
       value: {
-        type: 'string',
-      },
+        type: 'string'
+      }
     },
-    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable'],
+    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable']
   },
 
   NumericLiteral: {
     deprecatedAlias: 'NumberLiteral',
     fields: {
       value: {
-        type: 'number',
-      },
+        type: 'number'
+      }
     },
-    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable'],
+    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable']
   },
 
   NullLiteral: {
-    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable'],
+    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable']
   },
 
   BooleanLiteral: {
     fields: {
       value: {
-        type: 'boolean',
-      },
+        type: 'boolean'
+      }
     },
-    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable'],
+    aliases: ['Expression', 'Pureish', 'Literal', 'Immutable']
   },
 
   RegExpLiteral: {
@@ -429,13 +430,13 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Expression', 'Literal'],
     fields: {
       pattern: {
-        type: 'string',
+        type: 'string'
       },
       flags: {
         type: 'string',
-        default: '',
-      },
-    },
+        default: ''
+      }
+    }
   },
 
   LogicalExpression: {
@@ -443,15 +444,15 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Binary', 'Expression'],
     fields: {
       operator: {
-        type: LOGICAL_OPERATORS,
+        type: LOGICAL_OPERATORS
       },
       left: {
-        type: 'Expression',
+        type: 'Expression'
       },
       right: {
-        type: 'Expression',
-      },
-    },
+        type: 'Expression'
+      }
+    }
   },
 
   MemberExpression: {
@@ -459,19 +460,19 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Expression', 'LVal'],
     fields: {
       object: {
-        type: 'Expression',
+        type: 'Expression'
       },
       property: {
         type: ['Expression', 'Identifier']
       },
       computed: {
-        default: false,
+        default: false
       },
       optional: {
         type: [true, false],
-        optional: true,
-      },
-    },
+        optional: true
+      }
+    }
   },
 
   NewExpression: {
@@ -482,24 +483,24 @@ const nodeTypes: {[key: string]: ASTNode} = {
     visitor: ['directives', 'body'],
     fields: {
       sourceFile: {
-        type: 'string',
+        type: 'string'
       },
       sourceType: {
         type: 'enum',
         values: ['script', 'module'],
-        default: 'script',
+        default: 'script'
       },
       directives: {
         type: 'array',
         each: 'Directive',
-        default: [],
+        default: []
       },
       body: {
         type: 'array',
-        each: 'Statement',
-      },
+        each: 'Statement'
+      }
     },
-    aliases: ['Scopable', 'BlockParent', 'Block'],
+    aliases: ['Scopable', 'BlockParent', 'Block']
   },
 
   ObjectExpression: {
@@ -508,9 +509,9 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       properties: {
         type: 'array',
-        each: ['ObjectMethod', 'ObjectProperty', 'SpreadElement'],
-      },
-    },
+        each: ['ObjectMethod', 'ObjectProperty', 'SpreadElement']
+      }
+    }
   },
 
   ObjectMethod: {
@@ -520,26 +521,22 @@ const nodeTypes: {[key: string]: ASTNode} = {
       kind: {
         type: 'enum',
         values: ['method', 'get', 'set'],
-        default: 'method',
+        default: 'method'
       },
       computed: {
         type: 'boolean',
-        default: false,
+        default: false
       },
       key: {
-        type: [
-          'Identifier',
-          'StringLiteral',
-          'NumericLiteral',
-          'Expression']
+        type: ['Identifier', 'StringLiteral', 'NumericLiteral', 'Expression']
       },
       decorators: {
         type: 'array',
-        each: 'Decorator',
+        each: 'Decorator'
       },
       body: {
-        type: 'BlockStatement',
-      },
+        type: 'BlockStatement'
+      }
     },
     visitor: [
       'key',
@@ -547,7 +544,7 @@ const nodeTypes: {[key: string]: ASTNode} = {
       'body',
       'decorators',
       'returnType',
-      'typeParameters',
+      'typeParameters'
     ],
     aliases: [
       'UserWhitespacable',
@@ -556,38 +553,34 @@ const nodeTypes: {[key: string]: ASTNode} = {
       'BlockParent',
       'FunctionParent',
       'Method',
-      'ObjectMember',
-    ],
+      'ObjectMember'
+    ]
   },
 
   ObjectProperty: {
     fields: {
       computed: {
         type: 'boolean',
-        default: false,
+        default: false
       },
       key: {
-        type: [
-          'Identifier',
-          'StringLiteral',
-          'NumericLiteral',
-          'Expression']
+        type: ['Identifier', 'StringLiteral', 'NumericLiteral', 'Expression']
       },
       value: {
-        type: ['Expression', 'PatternLike'],
+        type: ['Expression', 'PatternLike']
       },
       shorthand: {
         type: 'boolean',
-        default: false,
+        default: false
       },
       decorators: {
         type: 'array',
         each: 'Decorator',
-        optional: true,
-      },
+        optional: true
+      }
     },
-    visitor: ['key', 'value', /*TODO:'decorators'*/],
-    aliases: ['UserWhitespacable', 'Property', 'ObjectMember'],
+    visitor: ['key', 'value' /*TODO:'decorators'*/],
+    aliases: ['UserWhitespacable', 'Property', 'ObjectMember']
   },
 
   RestElement: {
@@ -597,9 +590,9 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       ...patternLikeCommon,
       argument: {
-        type: 'LVal',
-      },
-    },
+        type: 'LVal'
+      }
+    }
   },
 
   ReturnStatement: {
@@ -608,9 +601,9 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       argument: {
         type: 'Expression',
-        optional: true,
-      },
-    },
+        optional: true
+      }
+    }
   },
 
   SequenceExpression: {
@@ -618,10 +611,10 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       expressions: {
         type: 'array',
-        each: 'Expression',
-      },
+        each: 'Expression'
+      }
     },
-    aliases: ['Expression'],
+    aliases: ['Expression']
   },
 
   SwitchCase: {
@@ -629,13 +622,13 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       test: {
         type: 'Expression',
-        optional: true,
+        optional: true
       },
       consequent: {
         type: 'array',
-        each: 'Statement',
-      },
-    },
+        each: 'Statement'
+      }
+    }
   },
 
   SwitchStatement: {
@@ -643,17 +636,17 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Statement', 'BlockParent', 'Scopable'],
     fields: {
       discriminant: {
-        type: 'Expression',
+        type: 'Expression'
       },
       cases: {
         type: 'array',
-        each: 'SwitchCase',
-      },
-    },
+        each: 'SwitchCase'
+      }
+    }
   },
 
   ThisExpression: {
-    aliases: ['Expression'],
+    aliases: ['Expression']
   },
 
   ThrowStatement: {
@@ -661,9 +654,9 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Statement', 'Terminatorless', 'CompletionStatement'],
     fields: {
       argument: {
-        type: 'Expression',
-      },
-    },
+        type: 'Expression'
+      }
+    }
   },
 
   TryStatement: {
@@ -671,49 +664,49 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Statement'],
     fields: {
       block: {
-        type: 'BlockStatement',
+        type: 'BlockStatement'
       },
       handler: {
         type: 'CatchClause',
-        optional: true,
+        optional: true
       },
       finalizer: {
         optional: true,
-        type: 'BlockStatement',
-      },
-    },
+        type: 'BlockStatement'
+      }
+    }
   },
 
   UnaryExpression: {
     fields: {
       prefix: {
-        default: true,
+        default: true
       },
       argument: {
-        type: 'Expression',
+        type: 'Expression'
       },
       operator: {
-        type: UNARY_OPERATORS,
-      },
+        type: UNARY_OPERATORS
+      }
     },
     visitor: ['argument'],
-    aliases: ['UnaryLike', 'Expression'],
+    aliases: ['UnaryLike', 'Expression']
   },
 
   UpdateExpression: {
     fields: {
       prefix: {
-        default: false,
+        default: false
       },
       argument: {
-        type: 'Expression',
+        type: 'Expression'
       },
       operator: {
-        type: UPDATE_OPERATORS,
-      },
+        type: UPDATE_OPERATORS
+      }
     },
     visitor: ['argument'],
-    aliases: ['Expression'],
+    aliases: ['Expression']
   },
 
   VariableDeclaration: {
@@ -722,30 +715,30 @@ const nodeTypes: {[key: string]: ASTNode} = {
     fields: {
       declare: {
         type: 'boolean',
-        optional: true,
+        optional: true
       },
       kind: {
         type: 'enum',
-        values: ['var', 'let', 'const'],
+        values: ['var', 'let', 'const']
       },
       declarations: {
         type: 'array',
-        each: 'VariableDeclarator',
-      },
-    },
+        each: 'VariableDeclarator'
+      }
+    }
   },
 
   VariableDeclarator: {
     visitor: ['id', 'init'],
     fields: {
       id: {
-        type: 'LVal',
+        type: 'LVal'
       },
       init: {
         type: 'Expression',
-        optional: true,
-      },
-    },
+        optional: true
+      }
+    }
   },
 
   WhileStatement: {
@@ -753,12 +746,12 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Statement', 'BlockParent', 'Loop', 'While', 'Scopable'],
     fields: {
       test: {
-        type: 'Expression',
+        type: 'Expression'
       },
       body: {
-        type: ['BlockStatement', 'Statement'],
-      },
-    },
+        type: ['BlockStatement', 'Statement']
+      }
+    }
   },
 
   WithStatement: {
@@ -766,14 +759,13 @@ const nodeTypes: {[key: string]: ASTNode} = {
     aliases: ['Statement'],
     fields: {
       object: {
-        type: 'Expression',
+        type: 'Expression'
       },
       body: {
-        type: ['BlockStatement', 'Statement'],
-      },
-    },
-  },
-
+        type: ['BlockStatement', 'Statement']
+      }
+    }
+  }
 };
 
 export default nodeTypes;

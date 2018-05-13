@@ -1,8 +1,11 @@
 // @flow
-import {List, Map} from './utils/proxy-immutable';
+import { List, Map } from './utils/proxy-immutable';
 
 export type ASTKey = string | number;
-export type ASTNodeData = Map<string, ASTNodeData | List<ASTNodeData> | string | boolean | number>;
+export type ASTNodeData = Map<
+  string,
+  ASTNodeData | List<ASTNodeData> | string | boolean | number
+>;
 export type ASTPath = List<ASTKey>;
 
 export type VerticalDirection = 'UP' | 'DOWN';
@@ -15,7 +18,7 @@ export type ASTNodeProps = {
   // Indentation level
   level: number,
   node: ASTNodeData,
-  onSelect: (ASTPath) => ASTPath,
+  onSelect: ASTPath => ASTPath,
   path: ASTPath,
   selected?: ASTPath,
   style?: any

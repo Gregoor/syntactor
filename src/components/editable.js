@@ -1,18 +1,17 @@
 // @flow
-import React, {PureComponent} from 'react';
+import React, { PureComponent } from 'react';
 import styled from 'styled-components';
-import type {ASTNodeProps} from '../types';
+import type { ASTNodeProps } from '../types';
 import styles from '../utils/styles';
 
 const Input = styled.input`
-  width: ${(props) => props.size ? 'auto' : '1px'};
+  width: ${props => (props.size ? 'auto' : '1px')};
   border: none;
   outline: none;
   white-space: normal;
   background: transparent;
-  ${styles.text}
+  ${styles.text};
 `;
-
 
 function setCaretPosition(el: any, caretPos) {
   el.value = el.value;
@@ -20,7 +19,6 @@ function setCaretPosition(el: any, caretPos) {
 }
 
 export default class Editable extends PureComponent<ASTNodeProps> {
-
   input = React.createRef();
 
   getSelectedInput() {
@@ -45,23 +43,25 @@ export default class Editable extends PureComponent<ASTNodeProps> {
   }
 
   handleFocus = () => {
-    const {onSelect, path, selected} = this.props;
+    const { onSelect, path, selected } = this.props;
     if (!selected) onSelect(path);
   };
 
   initializeInput = (justMounted: boolean) => {
-    const {children, selected, lastDirection} = this.props;
+    const { children, selected, lastDirection } = this.props;
     const input = this.input.current;
     if (document.activeElement === input) return;
 
     if (selected) {
       const childrenLength = children && children.toString().length;
-      if (lastDirection) setCaretPosition(input,
-        ['UP', 'LEFT'].includes(lastDirection)
-          ? childrenLength :
-          // when it just mounted but already has value, it means that that key was just entered
-          (justMounted ? childrenLength : 0)
-      );
+      if (lastDirection)
+        setCaretPosition(
+          input,
+          ['UP', 'LEFT'].includes(lastDirection)
+            ? childrenLength
+            : // when it just mounted but already has value, it means that that key was just entered
+              justMounted ? childrenLength : 0
+        );
       input.focus();
     } else {
       input.blur();
@@ -69,7 +69,7 @@ export default class Editable extends PureComponent<ASTNodeProps> {
   };
 
   render() {
-    const {children, style} = this.props;
+    const { children, style } = this.props;
     return (
       <Input
         onChange={() => 42}
@@ -81,5 +81,4 @@ export default class Editable extends PureComponent<ASTNodeProps> {
       />
     );
   }
-
 }
