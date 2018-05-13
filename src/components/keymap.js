@@ -101,7 +101,7 @@ export default class Keymap extends PureComponent<any> {
               [isNullLiteral, ['.'], 'Null']
             ].map(
               ([checkFn, keys, label]) =>
-                !!checkFn(selectedNode) && (
+                !checkFn(selectedNode) && (
                   <KeyInfo
                     key={label}
                     keys={
