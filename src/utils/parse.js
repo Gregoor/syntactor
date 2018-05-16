@@ -1,5 +1,5 @@
 import { parse as babylonParse } from 'babylon';
-import Immutable from './proxy-immutable';
+import * as Immutable from 'immutable';
 
 const fromJS = js =>
   typeof js !== 'object' || js === null

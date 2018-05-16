@@ -1,5 +1,5 @@
 // @flow
-import { List, Map } from './utils/proxy-immutable';
+import { List, Map } from 'immutable';
 
 export type ASTKey = string | number;
 export type ASTNodeData = Map<
@@ -12,14 +12,18 @@ export type VerticalDirection = 'UP' | 'DOWN';
 export type HorizontalDirection = 'LEFT' | 'RIGHT';
 export type Direction = VerticalDirection | HorizontalDirection;
 
-export type ASTNodeProps = {
-  children?: any,
-  lastDirection?: Direction,
-  // Indentation level
+export type BaseASTNodeProps = {
   level: number,
-  node: ASTNodeData,
-  onSelect: ASTPath => ASTPath,
   path: ASTPath,
-  selected?: ASTPath,
   style?: any
+};
+
+export type ASTNodeProps = BaseASTNodeProps & { node: ASTNodeData };
+
+export type EditorContextValue = {
+  ast: ASTNodeData,
+  lastDirection: Direction,
+  onSelect: ASTPath => any,
+  selected: ASTPath,
+  selectedRef: { current: null | HTMLInputElement }
 };

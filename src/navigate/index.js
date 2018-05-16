@@ -73,7 +73,7 @@ export default function navigate(
   const { isDown, isRight, isUp } = directionAsBools(direction);
   let paths: ASTPath[];
   if (astPaths.has(ast)) {
-    paths = (astPaths.get(ast): ASTPath[]);
+    paths = ((astPaths.get(ast): any): ASTPath[]);
   } else {
     paths = traverseAndCollectPaths(ast.toJS());
     astPaths.set(ast, paths);
@@ -85,7 +85,7 @@ export default function navigate(
     ((isUp || isDown) &&
       path.last() === 'value' &&
       nextPath.last() === 'key' &&
-      (isUp || isLiteral(ast.getIn(path))))
+      (isUp || isLiteral((ast: any).getIn(path))))
     ? paths[index + (isDown ? 2 : -2)] || nextPath || path
     : nextPath || path;
 }

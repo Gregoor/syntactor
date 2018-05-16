@@ -1,10 +1,11 @@
 // @flow
 import React, { PureComponent } from 'react';
 import styled from 'styled-components';
-import { is, List } from '../utils/proxy-immutable';
 import type { ASTNodeProps } from '../types';
 import ASTNode from './ast-node';
+import EditorContext from './editor-context';
 import Highlightable from './highlightable';
+import { is } from 'immutable';
 
 const IndentContainer = styled.span`
   border-left: 1px solid rgba(0, 0, 0, 0.1);
@@ -14,7 +15,7 @@ const IndentContainer = styled.span`
 const indent = level => {
   const indents = [];
   for (let i = 0; i < level; i++) {
-    indents.push(<IndentContainer key={i}> </IndentContainer>);
+    indents.push(<IndentContainer key={i}>{'  '}</IndentContainer>);
   }
   return indents;
 };
@@ -23,69 +24,88 @@ const Symbol = styled.span`
   color: grey;
 `;
 
-class CollectionExpression extends PureComponent<
-  ASTNodeProps & {
-    children?: any,
-    openString: string,
-    closeString: string
-  }
-> {
-  handleSelect = () => {
-    const { onSelect, path } = this.props;
-    onSelect(path.butLast());
-  };
+type CollectionExpressionProps = ASTNodeProps & {
+  children?: any,
+  closeString: string,
+  openString: string
+};
 
-  handleSelectEnd = () => {
-    const { onSelect, path } = this.props;
-    onSelect(path.push('end'));
-  };
-
-  render() {
-    const { children, openString, closeString, level, selected } = this.props;
-    const startSelected = selected && selected.isEmpty();
-    const endSelected = selected && selected.get(1) === 'end';
-    const highlighted = startSelected || endSelected;
-    return !children || !children.size ? (
-      <Highlightable {...{ highlighted }} onClick={this.handleSelect}>
-        <Symbol>
-          {openString}
-          {closeString}
-        </Symbol>
+const InnerCollectionExpression = ({
+  children,
+  closeString,
+  endSelected,
+  onSelect,
+  openString,
+  level,
+  path,
+  startSelected
+}: CollectionExpressionProps & {
+  endSelected: boolean,
+  openString: string,
+  closeString: string,
+  onSelect: any,
+  startSelected: boolean
+}) => {
+  const highlighted = startSelected || endSelected;
+  return !children || !children.size ? (
+    <Highlightable
+      {...{ highlighted }}
+      onClick={() => onSelect(path.butLast())}
+    >
+      <Symbol>
+        {openString}
+        {closeString}
+      </Symbol>
+    </Highlightable>
+  ) : (
+    <Highlightable {...{ highlighted }} light={highlighted}>
+      <Highlightable
+        {...{ highlighted }}
+        light={endSelected}
+        onClick={() => onSelect(path.butLast())}
+      >
+        <Symbol>{openString}</Symbol>
       </Highlightable>
-    ) : (
-      <Highlightable {...{ highlighted }} light={highlighted}>
-        <Highlightable
-          {...{ highlighted }}
-          light={endSelected}
-          onClick={this.handleSelect}
-        >
-          <Symbol>{openString}</Symbol>
-        </Highlightable>
-        {'\n'}
-        {React.Children.map(children, (element, i) => (
-          <span key={i}>
-            {indent(level)}
-            {element}
-            {children && i + 1 < children.size && <Symbol>,</Symbol>}
-            {'\n'}
-          </span>
-        ))}
-        {indent(level - 1)}
-        <Highlightable
-          {...{ highlighted }}
-          light={startSelected}
-          onClick={this.handleSelectEnd}
-        >
-          <Symbol>{closeString}</Symbol>
-        </Highlightable>
+      {'\n'}
+      {React.Children.map(children, (element, i) => (
+        <span key={i}>
+          {indent(level)}
+          {element}
+          {children && i + 1 < children.size && <Symbol>,</Symbol>}
+          {'\n'}
+        </span>
+      ))}
+      {indent(level - 1)}
+      <Highlightable
+        {...{ highlighted }}
+        light={startSelected}
+        onClick={() => onSelect(path.push('end'))}
+      >
+        <Symbol>{closeString}</Symbol>
       </Highlightable>
-    );
-  }
-}
+    </Highlightable>
+  );
+};
 
-export class ArrayExpression extends ASTNode {
+const CollectionExpression = (props: CollectionExpressionProps) => {
+  const { path } = props;
+  return (
+    <EditorContext.Consumer>
+      {({ onSelect, selected }) => (
+        <InnerCollectionExpression
+          {...(props: any)}
+          onSelect={onSelect}
+          startSelected={is(path.slice(0, -1), selected)}
+          endSelected={is(path.push('end'), selected.slice(0, path.size + 1))}
+        />
+      )}
+    </EditorContext.Consumer>
+  );
+};
+
+export class ArrayExpression extends PureComponent<ASTNodeProps> {
   render() {
-    const { lastDirection, node, onSelect, selected } = this.props;
+    const { node } = this.props;
     const level = this.props.level + 1;
     const path = this.props.path.push('elements');
     return (
@@ -96,29 +116,19 @@ export class ArrayExpression extends ASTNode {
         level={level}
         path={path}
       >
-        {node.elements.map((node, i) => {
-          const isSelected =
-            selected && is(selected.slice(0, 2), List.of('elements', i));
-          return (
-            <span key={i}>
-              <ASTNode
-                {...{ level, node, onSelect }}
-                {...(isSelected ? { ref: this.selectedRef } : {})}
-                lastDirection={isSelected ? lastDirection : null}
-                path={path.push(i)}
-                selected={selected && isSelected ? selected.slice(2) : null}
-              />
-            </span>
-          );
-        })}
+        {(node.get('elements'): any).map((node, i) => (
+          <span key={i}>
+            <ASTNode level={level} path={path.push(i)} />
+          </span>
+        ))}
       </CollectionExpression>
     );
   }
 }
 
-export class ObjectExpression extends ASTNode {
+export class ObjectExpression extends PureComponent<ASTNodeProps> {
   render() {
-    const { lastDirection, node, onSelect, selected } = this.props;
+    const { node } = this.props;
     const level = this.props.level + 1;
     const keyStyle = { color: '#d33682' };
     const path = this.props.path.push('properties');
@@ -130,36 +140,17 @@ export class ObjectExpression extends ASTNode {
         level={level}
         path={path}
       >
-        {node.properties.map((node, i) => {
-          const isPropertySelected =
-            selected && is(selected.slice(0, 2), List.of('properties', i));
-          const isKeySelected =
-            selected && isPropertySelected && selected.get(2) === 'key';
-          const isValueSelected =
-            selected && isPropertySelected && selected.get(2) === 'value';
+        {(node.get('properties'): any).map((node, i) => {
           const propertyPath = path.push(i);
           return (
             <span key={i}>
               <ASTNode
-                {...{ level, onSelect }}
-                {...(isKeySelected ? { ref: this.selectedRef } : {})}
-                lastDirection={isKeySelected ? lastDirection : null}
-                node={node.key}
+                level={level}
                 path={propertyPath.push('key')}
-                selected={isKeySelected}
                 style={keyStyle}
               />
               <Symbol>:</Symbol>{' '}
-              <ASTNode
-                {...{ level, onSelect }}
-                {...(isValueSelected ? { ref: this.selectedRef } : {})}
-                lastDirection={isValueSelected ? lastDirection : null}
-                node={node.value}
-                path={propertyPath.push('value')}
-                selected={
-                  selected && isValueSelected ? selected.slice(3) : null
-                }
-              />
+              <ASTNode level={level} path={propertyPath.push('value')} />
             </span>
           );
         })}

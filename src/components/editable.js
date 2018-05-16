@@ -1,8 +1,10 @@
 // @flow
-import React, { PureComponent } from 'react';
+import { is } from 'immutable';
+import React from 'react';
 import styled from 'styled-components';
-import type { ASTNodeProps } from '../types';
+import EditorContext from './editor-context';
 import styles from '../utils/styles';
+import type { ASTPath, EditorContextValue } from '../types';
 
 const Input = styled.input`
   width: ${props => (props.size ? 'auto' : '1px')};
@@ -18,8 +20,14 @@ function setCaretPosition(el: any, caretPos) {
   el.setSelectionRange(caretPos, caretPos);
 }
 
-export default class Editable extends PureComponent<ASTNodeProps> {
-  input = React.createRef();
+type EditableProps = {
+  children: any,
+  path: ASTPath,
+  style?: any
+};
+
+class Editable extends React.Component<EditableProps & EditorContextValue> {
+  input: { current: null | HTMLInputElement } = React.createRef();
 
   getSelectedInput() {
     return this.input.current;
@@ -44,20 +52,21 @@ export default class Editable extends PureComponent<ASTNodeProps> {
 
   handleFocus = () => {
     const { onSelect, path, selected } = this.props;
-    if (!selected) onSelect(path);
+    if (!is(path, selected)) onSelect(path);
   };
 
   initializeInput = (justMounted: boolean) => {
-    const { children, selected, lastDirection } = this.props;
-    const input = this.input.current;
-    if (document.activeElement === input) return;
+    const { children, path, selected, selectedRef, lastDirection } = this.props;
+    const input = this.getSelectedInput();
+    if (!input || document.activeElement === input) return;
 
-    if (selected) {
+    if (is(path, selected)) {
+      selectedRef.current = input;
       const childrenLength = children && children.toString().length;
       if (lastDirection)
         setCaretPosition(
           input,
-          ['UP', 'LEFT'].includes(lastDirection)
+          ['LEFT'].includes(lastDirection)
             ? childrenLength
             : // when it just mounted but already has value, it means that that key was just entered
               justMounted ? childrenLength : 0
@@ -82,3 +91,9 @@ export default class Editable extends PureComponent<ASTNodeProps> {
     );
   }
 }
+
+export default (props: EditableProps) => (
+  <EditorContext.Consumer>
+    {editorContextProps => <Editable {...editorContextProps} {...props} />}
+  </EditorContext.Consumer>
+);

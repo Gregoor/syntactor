@@ -1,76 +1,46 @@
 // @flow
 import React, { Fragment } from 'react';
+import type { ASTNodeProps } from '../types';
+import { is, List } from 'immutable';
 import ASTNode from './ast-node';
 import Editable from './editable';
+import EditorContext from './editor-context';
 import Highlightable from './highlightable';
 
-export class Identifier extends ASTNode {
-  render() {
-    const { node, selected } = this.props;
-    return (
-      <Highlightable highlighted={selected}>
-        <Editable {...this.props} ref={this.selectedRef}>
-          {node.name}
-        </Editable>
+export const Identifier = ({ node, path }: ASTNodeProps) => (
+  <EditorContext.Consumer>
+    {({ selected }) => (
+      <Highlightable highlighted={is(path, selected.slice(0, path.size))}>
+        <Editable path={path}>{node.get('name')}</Editable>
       </Highlightable>
-    );
-  }
-}
+    )}
+  </EditorContext.Consumer>
+);
 
-export class VariableDeclaration extends ASTNode {
-  render() {
-    const {
-      node: { kind, declarations },
-      onSelect,
-      path,
-      selected
-    } = this.props;
-    return (
-      <Highlightable highlighted={selected && selected.isEmpty()}>
-        <b onClick={() => onSelect(path)}>{kind}</b>{' '}
-        {declarations.map((declarator, i) => {
-          const isDeclarationSelected = selected && selected.get(1) === i;
-          return [
+export const VariableDeclaration = (props: ASTNodeProps) => {
+  const { node, path } = props;
+  const kind = (node.get('kind') || '').toString();
+  const declarations = (node.get('declarations'): any) || List();
+  return (
+    <EditorContext.Consumer>
+      {({ onSelect, selected }) => (
+        <Highlightable highlighted={is(path, selected)}>
+          <b onClick={() => onSelect(path)}>{kind}</b>{' '}
+          {declarations.map((declarator, i) => [
             i > 0 && '\n ' + ' '.repeat(kind.length),
-            <ASTNode
-              key={i}
-              {...this.props}
-              {...(isDeclarationSelected ? { ref: this.selectedRef } : {})}
-              node={declarator}
-              path={path.push('declarations', i)}
-              selected={isDeclarationSelected ? selected.slice(2) : null}
-            />,
+            <ASTNode {...props} key={i} path={path.push('declarations', i)} />,
             i + 1 < declarations.size && ','
-          ];
-        })};
-      </Highlightable>
-    );
-  }
-}
+          ])};
+        </Highlightable>
+      )}
+    </EditorContext.Consumer>
+  );
+};
 
-export class VariableDeclarator extends ASTNode {
-  render() {
-    const { node: { id, init }, path, selected } = this.props;
-    const isIdSelected = selected && selected.first() === 'id';
-    const isInitSelected = selected && selected.first() === 'init';
-    return (
-      <Fragment>
-        <ASTNode
-          {...this.props}
-          node={id}
-          path={path.push('id')}
-          selected={isIdSelected}
-          {...(isIdSelected ? { ref: this.selectedRef } : {})}
-        />
-        {' = '}
-        <ASTNode
-          {...this.props}
-          node={init}
-          path={path.push('init')}
-          selected={selected && isInitSelected ? selected.rest() : null}
-          {...(isInitSelected ? { ref: this.selectedRef } : {})}
-        />
-      </Fragment>
-    );
-  }
-}
+export const VariableDeclarator = ({ path, ...props }: ASTNodeProps) => (
+  <Fragment>
+    <ASTNode path={path.push('id')} {...props} />
+    {' = '}
+    <ASTNode path={path.push('init')} {...props} />
+  </Fragment>
+);

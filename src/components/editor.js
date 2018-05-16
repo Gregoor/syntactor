@@ -20,14 +20,16 @@ import {
   isObjectProperty,
   isIdentifier
 } from 'babel-types';
+import * as Immutable from 'immutable';
+import EditorContext from './editor-context';
 import navigate from '../navigate';
-import * as Immutable from '../utils/proxy-immutable';
 import parse, { parseObject } from '../utils/parse';
 import styles from '../utils/styles';
 import type {
   ASTNodeData,
   ASTPath,
   Direction,
+  EditorContextValue,
   VerticalDirection
 } from '../types';
 import * as collections from './collections';
@@ -83,7 +85,7 @@ declare type Props = {
 };
 
 declare type EditorState = {
-  +root: ASTNodeData,
+  +ast: any, //ASTNodeData,
   +selected: ASTPath
 };
 
@@ -110,21 +112,24 @@ export default class Editor extends PureComponent<
     onChange: () => null
   };
 
-  lastDirection: any;
-
-  rootRef: { current: null | ASTNode<void> } = React.createRef();
+  contextValue: EditorContextValue;
 
   constructor(props: Props) {
     super(props);
+    const initalEditorState = {
+      ast: parse(props.defaultValue),
+      selected: SELECTED_PREFIX
+    };
     this.state = {
       future: List(),
-      history: List([
-        {
-          root: parse(props.defaultValue),
-          selected: SELECTED_PREFIX
-        }
-      ]),
+      history: List([initalEditorState]),
       showKeymap: props.initiallyShowKeymap
+    };
+    this.contextValue = {
+      ...initalEditorState,
+      lastDirection: 'DOWN',
+      selectedRef: React.createRef(),
+      onSelect: this.handleSelect
     };
   }
 
@@ -155,16 +160,16 @@ export default class Editor extends PureComponent<
   };
 
   getCurrentEditorState() {
-    return this.state.history.first();
+    return ((this.state.history.first(): any): EditorState);
   }
 
   getSelectedNode() {
-    const { root, selected } = this.getCurrentEditorState();
-    return root.getIn(selected);
+    const { ast, selected } = this.getCurrentEditorState();
+    return ast.getIn(selected).toJS();
   }
 
-  getClosestCollectionPath(root: any /*ASTNode*/, selected: ASTPath) {
-    const selectedNode = root.getIn(selected);
+  getClosestCollectionPath(ast: any /*ASTNode*/, selected: ASTPath) {
+    const selectedNode = ast.getIn(selected);
 
     if (isObjectExpression(selectedNode)) {
       return selected.push('properties');
@@ -178,19 +183,20 @@ export default class Editor extends PureComponent<
     return selected.slice(0, index + 1);
   }
 
-  addToHistory(updateFn: (root: any /*ASTNode*/, selected: ASTPath) => any) {
+  addToHistory(updateFn: (ast: any /*ASTNode*/, selected: ASTPath) => any) {
     this.setState(({ history }) => {
-      let { root, selected } = history.first() || {};
-      if (selected.last() !== 'end' && !root.getIn(selected)) {
+      let { ast, selected } = history.first() || {};
+      if (selected.last() !== 'end' && !ast.getIn(selected)) {
         selected = List();
       }
-      const newState = { root, selected, ...updateFn(root, selected) };
-      const isRootPristine = Immutable.is(root, newState.root);
+      const newState = { ast, selected, ...updateFn(ast, selected) };
+      const isASTPristine = Immutable.is(ast, newState.ast);
 
-      if (newState.root && !isRootPristine) {
-        this.props.onChange(generate(newState.root.toJS()).code);
+      if (newState.ast && !isASTPristine) {
+        this.props.onChange(generate(newState.ast.toJS()).code);
       }
-      return Immutable.is(selected, newState.selected) && isRootPristine
+      this.updateEditorStateContext(newState);
+      return Immutable.is(selected, newState.selected) && isASTPristine
         ? undefined
         : {
             future: List(),
@@ -200,16 +206,16 @@ export default class Editor extends PureComponent<
   }
 
   updateValue(updateFn: any => any) {
-    this.addToHistory((root, selected) => ({
-      root: root.updateIn(selected.push('value'), updateFn)
+    this.addToHistory((ast, selected) => ({
+      ast: ast.updateIn(selected.push('value'), updateFn)
     }));
   }
 
   insert = (node: any) =>
-    this.addToHistory((root, selected) => {
+    this.addToHistory((ast, selected) => {
       const immutableNode = Immutable.fromJS(node);
       const collectionPath = this.getClosestCollectionPath(
-        root,
+        ast,
         selected.last() === 'end' ? selected.slice(0, -3) : selected
       );
       const itemIndex =
@@ -217,13 +223,13 @@ export default class Editor extends PureComponent<
           ? collectionPath.size
           : selected.get(collectionPath.size) + 1 || 0;
 
-      const collectionNode = root.getIn(collectionPath.butLast());
+      const collectionNode = ast.getIn(collectionPath.butLast());
       const isArray = isArrayExpression(collectionNode);
       const isObject = isObjectExpression(collectionNode);
 
       if (!isArray && !isObject) return;
 
-      const newRoot = root.updateIn(collectionPath, list =>
+      const newAST = ast.updateIn(collectionPath, list =>
         list.insert(
           itemIndex,
           isArray
@@ -234,76 +240,76 @@ export default class Editor extends PureComponent<
       let newSelected = collectionPath.push(itemIndex);
       if (!isArray) newSelected = newSelected.push('key');
       return {
-        root: newRoot,
+        ast: newAST,
         selected: newSelected
       };
     });
 
   replace(node: ASTNodeData, subSelected: ASTPath = List.of()) {
-    this.addToHistory((root, selected) => ({
-      root: root.updateIn(selected, () => Immutable.fromJS(node)),
+    this.addToHistory((ast, selected) => ({
+      ast: ast.updateIn(selected, () => Immutable.fromJS(node)),
       selected: selected.concat(subSelected)
     }));
   }
 
   changeSelected = (
     changeFn: (
-      root: any /*ASTNode*/,
+      ast: any /*ASTNode*/,
       selected: ASTPath
     ) => { direction?: Direction, selected: ASTPath }
   ) => {
-    return this.addToHistory((root, selected) => {
-      const { direction, selected: newSelected } = changeFn(root, selected);
-      this.lastDirection = direction;
-      const selectedNode = root.getIn(selected);
+    return this.addToHistory((ast, selected) => {
+      const { direction, selected: newSelected } = changeFn(ast, selected);
+      this.contextValue = { ...this.contextValue, lastDirection: direction };
+      const selectedNode = ast.getIn(selected);
       return {
-        root:
+        ast:
           selectedNode && isNumericLiteral(selectedNode)
-            ? root.updateIn(selected.push('value'), value => parseFloat(value))
-            : root,
+            ? ast.updateIn(selected.push('value'), value => parseFloat(value))
+            : ast,
         selected: newSelected
       };
     });
   };
 
   deleteSelected() {
-    return this.addToHistory((root, selected) => {
-      const newRoot = root.deleteIn(
+    return this.addToHistory((ast, selected) => {
+      const newAST = ast.deleteIn(
         selected.slice(
           0,
           1 + selected.findLastIndex(value => typeof value === 'number')
         )
       );
-      const isRootDelete =
+      const isASTDelete =
         selected.isEmpty() ||
         (selected.size === 2 && selected.last() === 'end');
       return {
-        root: isRootDelete ? Immutable.fromJS(nullLiteral()) : newRoot,
+        ast: isASTDelete ? Immutable.fromJS(nullLiteral()) : newAST,
         selected:
-          isRootDelete || selected.last() === 'end'
+          isASTDelete || selected.last() === 'end'
             ? List()
-            : navigate('DOWN', newRoot, navigate('UP', root, selected))
+            : navigate('DOWN', newAST, navigate('UP', ast, selected))
       };
     });
   }
 
   moveSelected = (direction: VerticalDirection) =>
-    this.addToHistory((root, selected) => {
+    this.addToHistory((ast, selected) => {
       const isMoveUp = direction === 'UP';
 
-      const collectionPath = this.getClosestCollectionPath(root, selected);
+      const collectionPath = this.getClosestCollectionPath(ast, selected);
 
       const itemIndex =
         selected.last() === 'end'
           ? collectionPath.size
           : selected.get(collectionPath.size) || 0;
       const itemPath = collectionPath.push(itemIndex);
-      const item = root.getIn(itemPath);
+      const item = ast.getIn(itemPath);
       const isItemObjectProperty = isObjectProperty(item);
 
       const newItemIndex = parseInt(itemIndex, 10) + (isMoveUp ? -1 : 1);
       const newItemPath = collectionPath.push(newItemIndex);
-      const targetItem = root.getIn(newItemPath);
+      const targetItem = ast.getIn(newItemPath);
 
       if (
         isItemObjectProperty &&
@@ -311,9 +317,9 @@ export default class Editor extends PureComponent<
         isObjectExpression(targetItem.value)
       ) {
         const targetObjectPath = newItemPath.push('value', 'properties');
-        const targetIndex = isMoveUp ? root.getIn(targetObjectPath).size : 0;
+        const targetIndex = isMoveUp ? ast.getIn(targetObjectPath).size : 0;
         return {
-          root: root
+          ast: ast
             .updateIn(targetObjectPath, collection =>
               collection.insert(targetIndex, item)
             )
@@ -334,13 +340,13 @@ export default class Editor extends PureComponent<
       if (newItemIndex < 0 || !targetItem) {
         const collectionIndexPath = newItemPath.slice(0, -3);
         const parentCollectionPath = this.getClosestCollectionPath(
-          root,
+          ast,
           collectionIndexPath
         );
 
         if (
           !isItemObjectProperty ||
-          !isObjectExpression(root.getIn(parentCollectionPath.butLast()))
+          !isObjectExpression(ast.getIn(parentCollectionPath.butLast()))
         ) {
           return;
         }
@@ -352,7 +358,7 @@ export default class Editor extends PureComponent<
         const newItemIndex = parseInt(collectionIndex, 10) + (isMoveUp ? 0 : 1);
 
         return {
-          root: root
+          ast: ast
             .updateIn(collectionPath, collection =>
               collection.delete(itemIndex)
             )
@@ -366,7 +372,7 @@ export default class Editor extends PureComponent<
       }
 
       return {
-        root: root
+        ast: ast
           .updateIn(itemPath, () => targetItem)
           .updateIn(newItemPath, () => item),
         selected: selected.update(collectionPath.size, () => newItemIndex)
@@ -374,17 +380,27 @@ export default class Editor extends PureComponent<
     });
 
   undo() {
-    this.setState(({ future, history }) => ({
-      future: future.unshift(history.first()),
-      history: history.size > 1 ? history.shift() : history
-    }));
+    this.setState(({ future, history }) => {
+      const newHistory = history.size > 1 ? history.shift() : history;
+      this.updateEditorStateContext((newHistory.first(): any));
+      return {
+        future: future.unshift((history.first(): any)),
+        history: newHistory
+      };
+    });
   }
 
   redo() {
-    this.setState(({ future, history }) => ({
-      future: future.shift(),
-      history: future.isEmpty() ? history : history.unshift(future.first())
-    }));
+    this.setState(({ future, history }) => {
+      const newHistory = future.isEmpty()
+        ? history
+        : history.unshift((future.first(): any));
+      this.updateEditorStateContext((newHistory.first(): any));
+      return {
+        future: future.shift(),
+        history: newHistory
+      };
+    });
   }
 
   handleCopy = (event: any) => {
@@ -392,13 +408,13 @@ export default class Editor extends PureComponent<
       return;
     }
 
-    let { root, selected } = this.getCurrentEditorState();
+    let { ast, selected } = this.getCurrentEditorState();
     if (selected.last() === 'end') {
       selected = selected.slice(0, -2);
     }
     event.clipboardData.setData(
       'text/plain',
-      generate(root.getIn(selected)).code
+      generate(ast.getIn(selected)).code
     );
     event.preventDefault();
   };
@@ -438,7 +454,7 @@ export default class Editor extends PureComponent<
       ArrowLeft: 'LEFT',
       ArrowRight: 'RIGHT'
     }[key];
-    const selectedInput: any = this.rootRef.current.getSelectedInput();
+    const selectedInput = this.contextValue.selectedRef.current;
     if (
       !altKey &&
       direction &&
@@ -452,9 +468,9 @@ export default class Editor extends PureComponent<
         ))
     ) {
       event.preventDefault();
-      return this.changeSelected((root, selected) => ({
+      return this.changeSelected((ast, selected) => ({
         direction,
-        selected: navigate(direction, root, selected)
+        selected: navigate(direction, ast, selected)
       }));
     }
 
@@ -509,11 +525,11 @@ export default class Editor extends PureComponent<
         case '{':
           event.preventDefault();
           return this.replace(
-            Immutable.fromJS(
+            (Immutable.fromJS(
               objectExpression([
                 objectProperty(stringLiteral(''), this.getSelectedNode())
               ])
-            ),
+            ): any),
             List.of('properties', 0, 'key')
           );
 
@@ -541,8 +557,8 @@ export default class Editor extends PureComponent<
   };
 
   handleChange = ({ target: { value } }: any) => {
-    this.addToHistory((root, selected) => ({
-      root: root.setIn(
+    this.addToHistory((ast, selected) => ({
+      ast: ast.setIn(
         selected.push(selected.last() === 'id' ? 'name' : 'value'),
         value
       )
@@ -552,9 +568,16 @@ export default class Editor extends PureComponent<
   handleSelect = (selected: ASTPath) =>
     this.changeSelected(() => ({ selected }));
 
+  updateEditorStateContext = (newEditorState: EditorState) => {
+    this.contextValue = {
+      ...this.contextValue,
+      ...newEditorState
+    };
+  };
+
   render() {
     const { showKeymap } = this.state;
-    const { root, selected } = this.getCurrentEditorState();
+    const { selected } = this.getCurrentEditorState();
     const isInArray =
       (selected.last() === 'end'
         ? selected.slice(0, -2)
@@ -569,9 +592,11 @@ export default class Editor extends PureComponent<
       >
         {window.location.host.startsWith('localhost') && (
           <div style={{ position: 'fixed', top: 0, left: 0 }}>
-            {selected
-              .toJS()
-              .map((s, i, arr) => [s, i + 1 < arr.length && ' > '])}
+            {
+              (selected
+                .toJS()
+                .map((s, i, arr) => [s, i + 1 < arr.length && ' > ']): any)
+            }
           </div>
         )}
 
@@ -579,18 +604,13 @@ export default class Editor extends PureComponent<
           {showKeymap ? 'x' : '?'}
         </Button>
         <Form onChange={this.handleChange} style={{ marginRight: 10 }}>
-          <ASTNode
-            lastDirection={this.lastDirection}
-            node={root}
-            selected={selected}
-            onSelect={this.handleSelect}
-            ref={this.rootRef}
-          />
+          <EditorContext.Provider value={this.contextValue}>
+            <ASTNode level={0} path={List()} />
+          </EditorContext.Provider>
         </Form>
         {showKeymap && (
           <Keymap
-            {...{ isInArray }}
-            selected={selected}
+            {...{ isInArray, selected }}
             selectedNode={this.getSelectedNode()}
           />
         )}
@@ -600,7 +620,7 @@ export default class Editor extends PureComponent<
 
   reset = () => {
     this.addToHistory(() => ({
-      root: parse(this.props.defaultValue),
+      ast: parse(this.props.defaultValue),
       selected: List()
     }));
   };

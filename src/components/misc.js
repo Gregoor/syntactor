@@ -1,33 +1,12 @@
 // @flow
 import React from 'react';
+import type { ASTNodeProps } from '../types';
 import ASTNode from './ast-node';
 
-export class File extends ASTNode {
-  render() {
-    const { node, path, selected, ...props } = this.props;
-    return (
-      <ASTNode
-        {...props}
-        node={node.program}
-        path={path.push('program')}
-        selected={selected.rest()}
-        ref={this.selectedRef}
-      />
-    );
-  }
-}
+export const File = ({ path, ...props }: ASTNodeProps) => (
+  <ASTNode {...props} path={path.push('program')} />
+);
 
-export class Program extends ASTNode {
-  render() {
-    const { node, path, selected, ...props } = this.props;
-    return (
-      <ASTNode
-        {...props}
-        node={node.body}
-        path={path.push('body')}
-        selected={selected.rest()}
-        ref={this.selectedRef}
-      />
-    );
-  }
-}
+export const Program = ({ path, ...props }: ASTNodeProps) => (
+  <ASTNode {...props} path={path.push('body')} />
+);

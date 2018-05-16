@@ -1,64 +1,63 @@
 // @flow
-import React from 'react';
-import Immutable, { List } from '../utils/proxy-immutable';
-import type { ASTNodeProps } from '../types';
-import Editable from './editable';
+import * as React from 'react';
+import { is, List, Map } from 'immutable';
+import type {
+  ASTNodeData,
+  ASTNodeProps,
+  BaseASTNodeProps,
+  EditorContextValue
+} from '../types';
+import EditorContext from './editor-context';
 
-export default class ASTNode<T = void> extends React.Component<
-  ASTNodeProps & T
+type State = {
+  node: ASTNodeData
+};
+
+class ASTNode extends React.Component<
+  BaseASTNodeProps & EditorContextValue,
+  State
 > {
-  // eslint-disable-next-line
-  selectedRef: { current: null | ASTNode<any> | Editable } = React.createRef();
+  static getDerivedStateFromProps({ ast, path }) {
+    return { node: (ast.getIn((path: any)): any) };
+  }
 
-  static defaultProps = {
-    level: 0,
-    path: new List()
+  state = {
+    node: Map()
   };
 
-  shouldComponentUpdate(nextProps: ASTNodeProps) {
+  shouldComponentUpdate(nextProps: BaseASTNodeProps, nextState: State) {
     return (
-      nextProps.level !== this.props.level ||
-      !Immutable.is(nextProps.node, this.props.node) ||
-      nextProps.onSelect !== this.props.onSelect ||
-      !Immutable.is(nextProps.path, this.props.path) ||
-      !Immutable.is(nextProps.selected, this.props.selected)
+      !is(nextProps.path, this.props.path) ||
+      !is(nextState.node, this.state.node)
     );
   }
 
-  getSelectedInput() {
-    const { current } = this.selectedRef;
-    current && !current.getSelectedInput && console.log(current);
-
-    return current && current.getSelectedInput();
-  }
-
   render() {
-    const { node, path, selected } = this.props;
+    const { level, path, style } = this.props;
+    const node = (this.state.node: any);
 
     if (node instanceof List) {
-      return node.map((n, i) => {
-        const isSelected = selected && selected.first() === i;
-        return [
-          <ASTNode
-            key={i}
-            {...this.props}
-            {...(isSelected ? { ref: this.selectedRef } : {})}
-            node={n}
-            path={path.push(i)}
-            selected={isSelected ? selected.rest() : null}
-          />,
-          i + 1 === node.size ? null : <br key={'br' + i} />
-        ];
-      });
+      return node.map((n, i) => [
+        <ASTNode {...this.props} key={i} path={path.push(i)} />,
+        i + 1 === node.size ? null : <br key={'br' + i} />
+      ]);
     }
 
-    const ASTNodeImpl = (ASTNodes[node.type]: any);
+    const ASTNodeImpl = (ASTNodes[node.get('type')]: React.ComponentType<
+      ASTNodeProps
+    >);
     if (!ASTNodeImpl) {
-      return console.warn('Unknown type', node.type, node.toJS());
+      return console.warn('Unknown type', node.get('type'), node.toJS());
     }
-    return <ASTNodeImpl {...this.props} ref={this.selectedRef} />;
+    return <ASTNodeImpl {...{ level, node, path, style }} />;
   }
 }
+
+export default (props: BaseASTNodeProps) => (
+  <EditorContext.Consumer>
+    {editorContextProps => <ASTNode {...editorContextProps} {...props} />}
+  </EditorContext.Consumer>
+);
 
 let ASTNodes: any = {};
 
