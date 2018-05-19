@@ -26,7 +26,7 @@ import navigate from '../navigate';
 import parse, { parseObject } from '../utils/parse';
 import styles from '../utils/styles';
 import type {
-  ASTNodeData,
+  AST,
   ASTPath,
   Direction,
   EditorContextValue,
@@ -47,7 +47,7 @@ function between(number, lower, upper) {
   return number >= lower && number <= upper;
 }
 
-function isEditable(node?: ASTNodeData) {
+function isEditable(node?: AST) {
   return isStringLiteral(node) || isNumericLiteral(node) || isIdentifier(node);
 }
 
@@ -85,7 +85,7 @@ declare type Props = {
 };
 
 declare type EditorState = {
-  +ast: any, //ASTNodeData,
+  +ast: any/*AST*/,
   +selected: ASTPath
 };
 
@@ -168,7 +168,7 @@ export default class Editor extends PureComponent<
     return ast.getIn(selected).toJS();
   }
 
-  getClosestCollectionPath(ast: any /*ASTNode*/, selected: ASTPath) {
+  getClosestCollectionPath(ast: any/*AST*/, selected: ASTPath) {
     const selectedNode = ast.getIn(selected);
 
     if (isObjectExpression(selectedNode)) {
@@ -183,7 +183,7 @@ export default class Editor extends PureComponent<
     return selected.slice(0, index + 1);
   }
 
-  addToHistory(updateFn: (ast: any /*ASTNode*/, selected: ASTPath) => any) {
+  addToHistory(updateFn: (ast: any/*AST*/, selected: ASTPath) => any) {
     this.setState(({ history }) => {
       let { ast, selected } = history.first() || {};
 
@@ -252,7 +252,7 @@ export default class Editor extends PureComponent<
       };
     });
 
-  replace(node: ASTNodeData, subSelected: ASTPath = List.of()) {
+  replace(node: any/*AST*/, subSelected: ASTPath = List.of()) {
     this.addToHistory((ast, selected) => ({
       ast: ast.updateIn(selected, () => Immutable.fromJS(node)),
       selected: selected.concat(subSelected)
@@ -261,7 +261,7 @@ export default class Editor extends PureComponent<
 
   changeSelected = (
     changeFn: (
-      ast: any /*ASTNode*/,
+      ast: any/*AST*/,
       selected: ASTPath
     ) => { direction?: Direction, selected: ASTPath }
   ) => {

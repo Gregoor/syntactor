@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { is, List, Map } from 'immutable';
 import type {
-  ASTNodeData,
+  AST,
   ASTNodeProps,
   BaseASTNodeProps,
   EditorContextValue
@@ -10,7 +10,7 @@ import type {
 import EditorContext from './editor-context';
 
 type State = {
-  node: ASTNodeData
+  node: AST
 };
 
 class ASTNode extends React.Component<

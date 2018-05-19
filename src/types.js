@@ -2,9 +2,9 @@
 import { List, Map } from 'immutable';
 
 export type ASTKey = string | number;
-export type ASTNodeData = Map<
+export type AST = Map<
   string,
-  ASTNodeData | List<ASTNodeData> | string | boolean | number
+  AST | List<AST> | string | boolean | number
 >;
 export type ASTPath = List<ASTKey>;
 
@@ -18,10 +18,10 @@ export type BaseASTNodeProps = {
   style?: any
 };
 
-export type ASTNodeProps = BaseASTNodeProps & { node: ASTNodeData };
+export type ASTNodeProps = BaseASTNodeProps & { node: AST };
 
 export type EditorContextValue = {
-  ast: ASTNodeData,
+  ast: AST,
   lastDirection: Direction,
   onSelect: ASTPath => any,
   selected: ASTPath,

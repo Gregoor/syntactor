@@ -10,7 +10,7 @@ import {
   VISITOR_KEYS
 } from 'babel-types';
 import { is, List } from 'immutable';
-import type { ASTNodeData, ASTPath, Direction } from '../types';
+import type { AST, ASTPath, Direction } from '../types';
 
 const NON_NAVIGATABLE_TESTS = [
   isFile,
@@ -64,10 +64,10 @@ function directionAsBools(direction: Direction) {
   };
 }
 
-const astPaths: Map<ASTNodeData, ASTPath[]> = new Map();
+const astPaths: Map<AST, ASTPath[]> = new Map();
 export default function navigate(
   direction: Direction,
-  ast: ASTNodeData,
+  ast: AST,
   path: ASTPath
 ) {
   const { isDown, isRight, isUp } = directionAsBools(direction);
