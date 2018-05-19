@@ -94,9 +94,10 @@ export default class Demo extends PureComponent<{}, State> {
   };
 
   resetEditor = () => {
-    this.setState({ startValue: example });
+    this.setState({ startValue: example }, () => {
+      this.editor && this.editor.reset();
+    });
     this.updateQueryString(example);
-    this.editor && this.editor.reset();
   };
 
   render() {

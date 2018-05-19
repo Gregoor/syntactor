@@ -414,7 +414,7 @@ export default class Editor extends PureComponent<
     }
     event.clipboardData.setData(
       'text/plain',
-      generate(ast.getIn(selected)).code
+      generate(ast.getIn(selected).toJS()).code
     );
     event.preventDefault();
   };
