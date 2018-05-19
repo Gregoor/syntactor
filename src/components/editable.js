@@ -26,7 +26,14 @@ type EditableProps = {
   style?: any
 };
 
-class Editable extends React.Component<EditableProps & EditorContextValue> {
+class Editable extends React.PureComponent<
+  EditableProps & {
+    lastDirection: $PropertyType<EditorContextValue, 'lastDirection'>,
+    onSelect: $PropertyType<EditorContextValue, 'onSelect'>,
+    selected: $PropertyType<EditorContextValue, 'selected'>,
+    selectedRef: $PropertyType<EditorContextValue, 'selectedRef'>
+  }
+> {
   input: { current: null | HTMLInputElement } = React.createRef();
 
   getSelectedInput() {
@@ -66,7 +73,7 @@ class Editable extends React.Component<EditableProps & EditorContextValue> {
       if (lastDirection)
         setCaretPosition(
           input,
-          ['LEFT'].includes(lastDirection)
+          'LEFT' === lastDirection
             ? childrenLength
             : // when it just mounted but already has value, it means that that key was just entered
               justMounted ? childrenLength : 0
@@ -94,6 +101,11 @@ class Editable extends React.Component<EditableProps & EditorContextValue> {
 
 export default (props: EditableProps) => (
   <EditorContext.Consumer>
-    {editorContextProps => <Editable {...editorContextProps} {...props} />}
+    {({ lastDirection, onSelect, selected, selectedRef }) => (
+      <Editable
+        {...{ lastDirection, onSelect, selected, selectedRef }}
+        {...props}
+      />
+    )}
   </EditorContext.Consumer>
 );
