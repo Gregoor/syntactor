@@ -223,7 +223,7 @@ export default class Editor extends PureComponent<
           ? collectionPath.size
           : selected.get(collectionPath.size) + 1 || 0;
 
-      const collectionNode = ast.getIn(collectionPath.butLast());
+      const collectionNode = ast.getIn(collectionPath.butLast()).toJS();
       const isArray = isArrayExpression(collectionNode);
       const isObject = isObjectExpression(collectionNode);
 
