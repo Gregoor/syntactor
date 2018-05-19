@@ -186,9 +186,16 @@ export default class Editor extends PureComponent<
   addToHistory(updateFn: (ast: any /*ASTNode*/, selected: ASTPath) => any) {
     this.setState(({ history }) => {
       let { ast, selected } = history.first() || {};
+
       if (selected.last() !== 'end' && !ast.getIn(selected)) {
         selected = List();
       }
+
+      const selectedNode = ast.getIn(selected);
+      if (selectedNode && isNumericLiteral(selectedNode.toJS())) {
+        ast = ast.updateIn(selected.push('value'), value => parseFloat(value).toString());
+      }
+
       const newState = { ast, selected, ...updateFn(ast, selected) };
       const isASTPristine = Immutable.is(ast, newState.ast);
 
@@ -261,12 +268,8 @@ export default class Editor extends PureComponent<
     return this.addToHistory((ast, selected) => {
       const { direction, selected: newSelected } = changeFn(ast, selected);
       this.contextValue = { ...this.contextValue, lastDirection: direction };
-      const selectedNode = ast.getIn(selected);
       return {
-        ast:
-          selectedNode && isNumericLiteral(selectedNode)
-            ? ast.updateIn(selected.push('value'), value => parseFloat(value))
-            : ast,
+        ast,
         selected: newSelected
       };
     });
@@ -477,7 +480,7 @@ export default class Editor extends PureComponent<
     const increment = INCREMENTS[key];
     if (isNumericLiteral(this.getSelectedNode()) && increment !== undefined) {
       event.preventDefault();
-      return this.updateValue(value => parseFloat(value) + increment);
+      return this.updateValue(value => (parseFloat(value) + increment).toString());
     }
 
     if (key === 'd' && ctrlKey) {
