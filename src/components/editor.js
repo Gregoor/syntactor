@@ -463,6 +463,7 @@ export default class Editor extends PureComponent<
       direction &&
       (direction === 'UP' ||
         direction === 'DOWN' ||
+        !isEditable(this.getSelectedNode()) ||
         !selectedInput ||
         !between(
           selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1),
