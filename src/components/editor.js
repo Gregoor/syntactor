@@ -169,7 +169,7 @@ export default class Editor extends PureComponent<
   }
 
   getClosestCollectionPath(ast: any/*AST*/, selected: ASTPath) {
-    const selectedNode = ast.getIn(selected);
+    const selectedNode = ast.getIn(selected).toJS();
 
     if (isObjectExpression(selectedNode)) {
       return selected.push('properties');
