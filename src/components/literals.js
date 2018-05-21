@@ -9,13 +9,15 @@ import Highlightable from './highlightable';
 const Literal = ({
   children,
   path,
+  selectable,
   style,
   tabIndex
-}: ASTNodeProps & { children: any, tabIndex?: string }) => (
+}: ASTNodeProps & { children: any, selectable?: boolean, tabIndex?: string }) => (
   <EditorContext.Consumer>
-    {({ selected }) => (
+    {({ onSelect, selected }) => (
       <Highlightable
         highlighted={is(path, selected.slice(0, path.size))}
+        onClick={selectable && (() => onSelect(path))}
         {...{ style, tabIndex }}
       >
         {children}
@@ -25,7 +27,7 @@ const Literal = ({
 );
 
 export const BooleanLiteral = (props: ASTNodeProps) => (
-  <Literal tabIndex="0" {...props}>
+  <Literal selectable tabIndex="0" {...props} >
     <b>{(props.node.get('value') || false).toString()}</b>
   </Literal>
 );
@@ -42,7 +44,7 @@ export const NumericLiteral = (props: ASTNodeProps) => {
 };
 
 export const NullLiteral = (props: ASTNodeProps) => (
-  <Literal tabIndex="0" {...props}>
+  <Literal selectable tabIndex="0" {...props}>
     <b>null</b>
   </Literal>
 );
