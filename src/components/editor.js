@@ -484,6 +484,9 @@ export default class Editor extends PureComponent<
     const { selected } = this.getCurrentEditorState();
     const selectedNode = this.getSelectedNode();
 
+    // Letting Alt out reduces immersion
+    if (event.altKey) event.preventDefault();
+
     function findActionFor(keyMappings: KeyMapping[], event: any) {
       for (const { mappings, name, keys, modifiers, test, type } of keyMappings) {
         if (
