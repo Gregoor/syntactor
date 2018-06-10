@@ -4,24 +4,24 @@ import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import generate from 'babel-generator';
 import {
-  booleanLiteral,
-  nullLiteral,
-  numericLiteral,
-  stringLiteral,
   arrayExpression,
-  objectExpression,
-  objectProperty,
-  isBooleanLiteral,
+  booleanLiteral,
+  isArrayExpression,
+  isIdentifier,
   isNullLiteral,
   isNumericLiteral,
-  isStringLiteral,
-  isArrayExpression,
   isObjectExpression,
   isObjectProperty,
-  isIdentifier
+  isStringLiteral,
+  nullLiteral,
+  numericLiteral,
+  objectExpression,
+  objectProperty,
+  stringLiteral
 } from 'babel-types';
 import * as Immutable from 'immutable';
 import EditorContext from './editor-context';
+import keyMappings from '../key-mappings';
 import navigate from '../navigate';
 import parse, { parseObject } from '../utils/parse';
 import styles from '../utils/styles';
@@ -38,6 +38,7 @@ import Keymap from './keymap';
 import * as literals from './literals';
 import * as misc from './misc';
 import ASTNode, { injectASTNodeComponents } from './ast-node';
+import type { KeyMapping } from '../key-mappings';
 
 const { List } = Immutable;
 
@@ -85,15 +86,8 @@ declare type Props = {
 };
 
 declare type EditorState = {
-  +ast: any/*AST*/,
+  +ast: any /*AST*/,
   +selected: ASTPath
-};
-
-const INCREMENTS = {
-  i: 1,
-  I: 10,
-  d: -1,
-  D: -10
 };
 
 const SELECTED_PREFIX = List.of('program', 'body');
@@ -111,6 +105,8 @@ export default class Editor extends PureComponent<
     defaultValue: {},
     onChange: () => null
   };
+
+  actions: { [actionType: string]: (actionParam: any) => any };
 
   contextValue: EditorContextValue;
 
@@ -130,6 +126,39 @@ export default class Editor extends PureComponent<
       lastDirection: 'DOWN',
       selectedRef: React.createRef(),
       onSelect: this.handleSelect
+    };
+    this.actions = {
+      UNDO: () => this.undo(),
+      REDO: () => this.redo(),
+
+      INSERT: () => this.insert(nullLiteral()),
+      MOVE: direction => this.moveSelected(direction),
+      DELETE: () => this.deleteSelected(),
+
+      SET_BOOLEAN: value => this.replace(booleanLiteral(value)),
+      ADD_TO_NUMBER: increment =>
+        this.updateValue(value => (parseFloat(value) + increment).toString()),
+      TO_STRING: () =>
+        this.replace(
+          stringLiteral((this.getSelectedNode().value || '').toString())
+        ),
+      TO_NUMBER: () => {
+        const {value} = this.getSelectedNode();
+        return this.replace(
+          numericLiteral(Number(value) || parseFloat(value) || 0)
+        );
+      },
+      TO_ARRAY: () => this.replace(arrayExpression([this.getSelectedNode()])),
+      TO_OBJECT: () =>
+        this.replace(
+          (Immutable.fromJS(
+            objectExpression([
+              objectProperty(stringLiteral(''), this.getSelectedNode())
+            ])
+          ): any),
+          List.of('properties', 0, 'key')
+        ),
+      TO_NULL: () => this.replace(nullLiteral())
     };
   }
 
@@ -165,10 +194,11 @@ export default class Editor extends PureComponent<
 
   getSelectedNode() {
     const { ast, selected } = this.getCurrentEditorState();
-    return ast.getIn(selected).toJS();
+    const node = ast.getIn(selected);
+    return node ? node.toJS() : node;
   }
 
-  getClosestCollectionPath(ast: any/*AST*/, selected: ASTPath) {
+  getClosestCollectionPath(ast: any /*AST*/, selected: ASTPath) {
     const selectedNode = ast.getIn(selected).toJS();
 
     if (isObjectExpression(selectedNode)) {
@@ -183,7 +213,7 @@ export default class Editor extends PureComponent<
     return selected.slice(0, index + 1);
   }
 
-  addToHistory(updateFn: (ast: any/*AST*/, selected: ASTPath) => any) {
+  addToHistory(updateFn: (ast: any /*AST*/, selected: ASTPath) => any) {
     this.setState(({ history }) => {
       let { ast, selected } = history.first() || {};
 
@@ -193,7 +223,9 @@ export default class Editor extends PureComponent<
 
       const selectedNode = ast.getIn(selected);
       if (selectedNode && isNumericLiteral(selectedNode.toJS())) {
-        ast = ast.updateIn(selected.push('value'), value => parseFloat(value).toString());
+        ast = ast.updateIn(selected.push('value'), value =>
+          parseFloat(value).toString()
+        );
       }
 
       const newState = { ast, selected, ...updateFn(ast, selected) };
@@ -252,7 +284,7 @@ export default class Editor extends PureComponent<
       };
     });
 
-  replace(node: any/*AST*/, subSelected: ASTPath = List.of()) {
+  replace(node: any /*AST*/, subSelected: ASTPath = List.of()) {
     this.addToHistory((ast, selected) => ({
       ast: ast.updateIn(selected, () => Immutable.fromJS(node)),
       selected: selected.concat(subSelected)
@@ -261,7 +293,7 @@ export default class Editor extends PureComponent<
 
   changeSelected = (
     changeFn: (
-      ast: any/*AST*/,
+      ast: any /*AST*/,
       selected: ASTPath
     ) => { direction?: Direction, selected: ASTPath }
   ) => {
@@ -449,21 +481,52 @@ export default class Editor extends PureComponent<
   };
 
   handleKeyDown = (event: any) => {
-    const { altKey, ctrlKey, key } = event;
+    const { selected } = this.getCurrentEditorState();
+    const selectedNode = this.getSelectedNode();
+
+    function findActionFor(keyMappings: KeyMapping[], event: any) {
+      for (const { mappings, name, keys, modifiers, test, type } of keyMappings) {
+        if (
+          (modifiers &&
+            (Array.isArray(modifiers)
+              ? modifiers
+              : modifiers(selectedNode, selected)
+            ).some(modifier => !event[modifier + 'Key'])) ||
+          (keys && keys.every(key => key !== event.key)) ||
+          (test && !test(selectedNode, selected))
+        ) {
+          continue;
+        }
+
+        if (!mappings) return [type];
+        const action = findActionFor(mappings, event);
+        if (!(type || name) || action) return type ? [type, ...action] : action;
+      }
+    }
+    const [actionName, actionParam] = findActionFor(keyMappings, event) || [];
+    if (actionName) {
+      event.preventDefault();
+      if (!this.actions[actionName]) {
+        console.error('Missing action', actionName);
+        return;
+      }
+      this.actions[actionName](actionParam);
+      return;
+    }
 
     const direction = {
       ArrowUp: 'UP',
       ArrowDown: 'DOWN',
       ArrowLeft: 'LEFT',
       ArrowRight: 'RIGHT'
-    }[key];
+    }[event.key];
     const selectedInput = this.contextValue.selectedRef.current;
+
     if (
-      !altKey &&
       direction &&
       (direction === 'UP' ||
         direction === 'DOWN' ||
-        !isEditable(this.getSelectedNode()) ||
+        !isEditable(selectedNode) ||
         !selectedInput ||
         !between(
           selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1),
@@ -478,85 +541,10 @@ export default class Editor extends PureComponent<
       }));
     }
 
-    const increment = INCREMENTS[key];
-    if (isNumericLiteral(this.getSelectedNode()) && increment !== undefined) {
-      event.preventDefault();
-      return this.updateValue(value => (parseFloat(value) + increment).toString());
-    }
-
-    if (key === 'd' && ctrlKey) {
-      event.preventDefault();
-      return this.deleteSelected();
-    }
-
-    const selectedIsNull = isNullLiteral(this.getSelectedNode());
-
-    const enteredNumber = parseInt(key, 10);
-    if (selectedIsNull && !isNaN(enteredNumber)) {
+    const enteredNumber = parseInt(event.key, 10);
+    if (isNullLiteral(selectedNode) && !isNaN(enteredNumber)) {
       event.preventDefault();
       return this.replace(numericLiteral(enteredNumber));
-    }
-    if (
-      this.getCurrentEditorState().selected.last() !== 'key' &&
-      (selectedIsNull || altKey || isBooleanLiteral(this.getSelectedNode()))
-    ) {
-      switch (key) {
-        case 's':
-        case "'":
-          event.preventDefault();
-          return this.replace(
-            stringLiteral((this.getSelectedNode().value || '').toString())
-          );
-
-        case 'n':
-          event.preventDefault();
-          const value = this.getSelectedNode().value;
-          return this.replace(
-            numericLiteral(Number(value) || parseFloat(value) || 0)
-          );
-
-        case 't':
-        case 'f':
-          event.preventDefault();
-          return this.replace(booleanLiteral(key === 't'));
-
-        case 'a':
-        case '[':
-          event.preventDefault();
-          return this.replace(arrayExpression([this.getSelectedNode()]));
-
-        case 'o':
-        case '{':
-          event.preventDefault();
-          return this.replace(
-            (Immutable.fromJS(
-              objectExpression([
-                objectProperty(stringLiteral(''), this.getSelectedNode())
-              ])
-            ): any),
-            List.of('properties', 0, 'key')
-          );
-
-        case '.':
-          event.preventDefault();
-          return this.replace(nullLiteral());
-
-        default:
-      }
-    }
-
-    if (altKey && (direction === 'UP' || direction === 'DOWN')) {
-      this.moveSelected(direction);
-    }
-
-    if (key === 'Enter') {
-      event.preventDefault();
-      return this.insert(nullLiteral());
-    }
-
-    if (ctrlKey && key.toLowerCase() === 'z') {
-      event.preventDefault();
-      return key === 'z' ? this.undo() : this.redo();
     }
   };
 

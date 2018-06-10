@@ -85,7 +85,9 @@ export default function navigate(
     ((isUp || isDown) &&
       path.last() === 'value' &&
       nextPath.last() === 'key' &&
-      (isUp || isLiteral((ast: any).getIn(path).toJS())))
+      (isUp || isLiteral((ast: any).getIn(path).toJS()))) ||
+    (isDown && path.last() === 'id') ||
+    (isUp && nextPath.last() === 'init')
     ? paths[index + (isDown ? 2 : -2)] || nextPath || path
     : nextPath || path;
 }
