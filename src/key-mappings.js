@@ -6,7 +6,8 @@ import {
   isNullLiteral,
   isNumericLiteral,
   isObjectExpression,
-  isStringLiteral
+  isStringLiteral,
+  isVariableDeclaration
 } from 'babel-types';
 import type { ASTPath } from './types';
 
@@ -63,6 +64,11 @@ export default ([
             keys: ['ArrowDown']
           }
         ]
+      },
+      {
+        type: 'CHANGE_DECLARATION_KIND',
+        mappings: ['const', 'let', 'var'].map(kind => ({type: kind, keys: [kind[0]]})),
+        test: node => isVariableDeclaration(node)
       }
     ]
   },

@@ -80,14 +80,13 @@ export default function navigate(
   }
   const index = paths.findIndex(p => is(p, path));
   const nextPath = paths[index + (isDown || isRight ? 1 : -1)];
-  return (isDown && path.last() === 'key') ||
-    (isUp && path.last() === 'key' && nextPath.last() === 'value') ||
-    ((isUp || isDown) &&
+  return (isUp || isDown) &&(
       path.last() === 'value' &&
       nextPath.last() === 'key' &&
-      (isUp || isLiteral((ast: any).getIn(path).toJS()))) ||
-    (isDown && path.last() === 'id') ||
-    (isUp && nextPath.last() === 'init')
+    (isDown && ['id', 'key'].includes(path.last()) ||
+      isLiteral((ast: any).getIn(path).toJS()) ||
+  (isUp && path.last() === 'key' && nextPath.last() === 'value') ||
+    (isUp && nextPath.last() === 'init')))
     ? paths[index + (isDown ? 2 : -2)] || nextPath || path
     : nextPath || path;
 }

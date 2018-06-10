@@ -50,6 +50,7 @@ const Nav = styled.div`
 `;
 
 const example = `
+  const i = 23;
   const README = {
     'WelcomeTo': 'Syntactor',
     'Version': 1.2,

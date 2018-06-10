@@ -138,6 +138,7 @@ export default class Editor extends PureComponent<
       SET_BOOLEAN: value => this.replace(booleanLiteral(value)),
       ADD_TO_NUMBER: increment =>
         this.updateValue(value => (parseFloat(value) + increment).toString()),
+      CHANGE_DECLARATION_KIND: (kind) => this.changeDeclarationKind(kind),
       TO_STRING: () =>
         this.replace(
           stringLiteral((this.getSelectedNode().value || '').toString())
@@ -247,6 +248,12 @@ export default class Editor extends PureComponent<
   updateValue(updateFn: any => any) {
     this.addToHistory((ast, selected) => ({
       ast: ast.updateIn(selected.push('value'), updateFn)
+    }));
+  }
+
+  changeDeclarationKind(kind: string) {
+    this.addToHistory((ast, selected) => ({
+      ast: ast.updateIn(selected.push('kind'), () => kind)
     }));
   }
 
@@ -484,8 +491,39 @@ export default class Editor extends PureComponent<
     const { selected } = this.getCurrentEditorState();
     const selectedNode = this.getSelectedNode();
 
-    // Letting Alt out reduces immersion
-    if (event.altKey) event.preventDefault();
+    const direction = {
+      ArrowUp: 'UP',
+      ArrowDown: 'DOWN',
+      ArrowLeft: 'LEFT',
+      ArrowRight: 'RIGHT'
+    }[event.key];
+    const selectedInput = this.contextValue.selectedRef.current;
+
+    if (
+      !event.altKey &&
+      direction &&
+      (direction === 'UP' ||
+        direction === 'DOWN' ||
+        !isEditable(selectedNode) ||
+        !selectedInput ||
+        !between(
+          selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1),
+          0,
+          selectedInput.value.length
+        ))
+    ) {
+      event.preventDefault();
+      return this.changeSelected((ast, selected) => ({
+        direction,
+        selected: navigate(direction, ast, selected)
+      }));
+    }
+
+    const enteredNumber = parseInt(event.key, 10);
+    if (isNullLiteral(selectedNode) && !isNaN(enteredNumber)) {
+      event.preventDefault();
+      return this.replace(numericLiteral(enteredNumber));
+    }
 
     function findActionFor(keyMappings: KeyMapping[], event: any) {
       for (const { mappings, name, keys, modifiers, test, type } of keyMappings) {
@@ -514,40 +552,6 @@ export default class Editor extends PureComponent<
         return;
       }
       this.actions[actionName](actionParam);
-      return;
-    }
-
-    const direction = {
-      ArrowUp: 'UP',
-      ArrowDown: 'DOWN',
-      ArrowLeft: 'LEFT',
-      ArrowRight: 'RIGHT'
-    }[event.key];
-    const selectedInput = this.contextValue.selectedRef.current;
-
-    if (
-      direction &&
-      (direction === 'UP' ||
-        direction === 'DOWN' ||
-        !isEditable(selectedNode) ||
-        !selectedInput ||
-        !between(
-          selectedInput.selectionStart + (direction === 'LEFT' ? -1 : 1),
-          0,
-          selectedInput.value.length
-        ))
-    ) {
-      event.preventDefault();
-      return this.changeSelected((ast, selected) => ({
-        direction,
-        selected: navigate(direction, ast, selected)
-      }));
-    }
-
-    const enteredNumber = parseInt(event.key, 10);
-    if (isNullLiteral(selectedNode) && !isNaN(enteredNumber)) {
-      event.preventDefault();
-      return this.replace(numericLiteral(enteredNumber));
     }
   };
 
